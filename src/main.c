@@ -17,7 +17,7 @@
 #include "DNS.h"
 #include "utils.h"
 
-#define MAXLINE 80
+#define MAXLINE 512
 #define SERV_PORT 53
 
 extern int debug_info;
@@ -49,16 +49,19 @@ int main(int argc, char* argv[]) {
                      &cliaddr_len);
         if (n == -1)
             perr_exit("recvfrom error");
-        printf("received from %u at PORT %d\n",
-               inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
+        inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str));
+        printf("[serving]%s:%d...\n",
+               &str,
                ntohs(cliaddr.sin_port));
 
-        LOG(2, buf);
-        
+        LOG(2, strcat("Receive:", buf));
+        //DNS_process(buf);
+
         for (i = 0; i < n; i++)
             buf[i] = toupper(buf[i]);
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
                    sizeof(cliaddr));
+        //LOG(2, strcat("Send:", buf));
         if (n == -1)
             perr_exit("sendto error");
     }

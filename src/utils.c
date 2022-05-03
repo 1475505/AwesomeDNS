@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 extern uint8_t debug_info;
 
@@ -19,7 +20,8 @@ uint32_t ip2hex(char* ip) {
 
 void LOG(int legal, char* info){
     if (legal >= debug_info){
-        printf("[LOG %d]%s\n",legal, info);
+        printf("[LOG %d]",legal);
+        fputs(info, stdout);
     }
     return;
 }

@@ -12,8 +12,8 @@
             "externalConsole": false,
             "linux": {
                 "MIMode": "gdb",
-                "miDebuggerPath": "gdb",
-                "program": "${workspaceFolder}/output/main"
+                "miDebuggerPath": "/usr/bin/gdb",
+                "program": "${fileDirname}/../output/main"
             },
             "osx": {
                 "MIMode": "lldb",

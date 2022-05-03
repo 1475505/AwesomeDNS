@@ -18,9 +18,13 @@ uint32_t ip2hex(char* ip) {
     return ans;
 }
 
+void LOG(char* str){
+	fputs(str, stdout);
+	return;
+}
+
 int main(){
     char ip[16]="202.106.0.20";
-    uint32_t ans = ip2hex(ip);
-    printf("%u\n", ans);
+    LOG(ip);
     return 0;
 }
