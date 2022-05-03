@@ -1,0 +1,10 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/ll/AwesomeDNS/output",
+            "binaryPath": "/home/ll/AwesomeDNS/output/main",
+            "binaryArgs": []
+        }
+    ]
+}
