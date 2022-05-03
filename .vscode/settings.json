@@ -6,5 +6,8 @@
             "binaryPath": "/home/ll/AwesomeDNS/output/main",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "stdlib.h": "c"
+    }
 }
