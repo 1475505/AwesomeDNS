@@ -1,6 +1,6 @@
 To see if the server program is working, run
 ```
-sudo netstat -apn|grep 53
+sudo netstat -apn|grep :53
 //or
 sudo netstat -apn|grep main
 ```

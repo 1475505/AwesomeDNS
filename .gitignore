@@ -1,5 +1,7 @@
 *.pdf
 *.pptx
+.vscode/*
+.vscode
 
 # Prerequisites
 *.d
