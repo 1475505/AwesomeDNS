@@ -18,7 +18,7 @@
 #include "utils.h"
 
 #define MAXLINE 80
-#define SERV_PORT 53
+#define SERV_PORT 53000
 
 extern int debug_info;
 extern char serverName[16];
@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(ip2hex(serverName));
+    // servaddr.sin_addr.s_addr = htonl(ip2hex(serverName));
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
     bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
@@ -50,7 +51,7 @@ int main(int argc, char* argv[]) {
         connfd = accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddr_len);
 
         n = read(connfd, buf, MAXLINE);
-        printf("received from %d at PORT %d\n",
+        printf("received from %u at PORT %d\n",
                inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
                ntohs(cliaddr.sin_port));
 
