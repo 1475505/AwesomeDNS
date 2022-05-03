@@ -7,7 +7,7 @@ sudo netstat -apn|grep main
 
 You can connect tp the server by
 ```
-nc 127.0.0.1 53
+nc 127.0.0.53 53
 ```
 
 Then you can send and receive.

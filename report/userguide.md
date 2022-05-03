@@ -2,14 +2,15 @@
 
 At first, you need to run this program `sudo`, i.e. as root.
 
-(IMPORTANT)You may need to stop the firewall in linux, which may cause some securiity problrm.
+(IMPORTANT)You may need to stop the firewall in linux, which may cause some security problem.
 
 ```
 sudo vim /etc/systemd/resolved.conf
 ```
 
 **Then uncomment the DNS= line and the DNSStubListener= line.** 
-- change the DNS= value in this file to the DNS server you want to use (e.g.`127.0.0.1` to use a local proxy, which points to this program. 1.1.1.1 to use the Cloudflare DNS, etc.), and also change the DNSStubListener= value from yes to `no`.
+- change the DNS= value in this file to the DNS server you want to use (e.g.`127.0.0.53` to use this local proxy. 1.1.1.1 to use the Cloudflare DNS, etc.)
+- change the DNSStubListener= value from yes to `no`.
 
 then
 

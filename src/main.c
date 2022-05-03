@@ -39,10 +39,8 @@ int main(int argc, char* argv[]) {
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    char test[16] = "127.0.0.53";
-    servaddr.sin_addr.s_addr = htonl(ip2hex(test));
-    // servaddr.sin_addr.s_addr = htonl(inet_addr(test))
-    // servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    char DNSaddress[16] = "127.0.0.53";
+    servaddr.sin_addr.s_addr = htonl(ip2hex(DNSaddress));
     servaddr.sin_port = htons(SERV_PORT);
 
     Bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
@@ -100,6 +98,7 @@ int main(int argc, char* argv[]) {
                     FD_CLR(sockfd, &allset);
                     client[i] = -1;
                 } else {
+                    //TODO!!!
                     int j;
                     for (j = 0; j < n; j++)
                         buf[j] = toupper(buf[j]);
