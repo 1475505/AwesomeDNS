@@ -26,18 +26,19 @@ extern char configFile[64];
 
 int main(int argc, char* argv[]) {
     config(argc, argv);
-    struct sockaddr_in servaddr, cliaddr;
-    socklen_t cliaddr_len;
-    int listenfd, connfd;
+    int i, maxi, maxfd, listenfd, connfd, sockfd;
+    int nready, client[FD_SETSIZE];
+    ssize_t n;
+    fd_set rset, allset;
     char buf[MAXLINE];
     char str[INET_ADDRSTRLEN];
-    int i, n;
+    socklen_t cliaddr_len;
+    struct sockaddr_in cliaddr, servaddr;
 
     listenfd = Socket(AF_INET, SOCK_STREAM, 0);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    // servaddr.sin_addr.s_addr = htonl(ip2hex(serverName));
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
@@ -45,25 +46,67 @@ int main(int argc, char* argv[]) {
 
     Listen(listenfd, 20);
 
-    printf("Accepting connections ...\n");
-    while (1) {
-        cliaddr_len = sizeof(cliaddr);
-        connfd = Accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddr_len);
-        while (1) {
-            n = Read(connfd, buf, MAXLINE);
-            if (n == 0) {
-                printf("the client side has been closed.\n");
-                break;
-            }
-            printf("received from %u at PORT %d\n",
+    maxfd = listenfd; /* initialize */
+    maxi = -1;        /* index into client[] array */
+    for (i = 0; i < FD_SETSIZE; i++)
+        client[i] = -1; /* -1 indicates available entry */
+    FD_ZERO(&allset);
+    FD_SET(listenfd, &allset);
+
+    for (;;) {
+        rset = allset; /* structure assignment */
+        nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
+        if (nready < 0)
+            perr_exit("select error");
+
+        if (FD_ISSET(listenfd, &rset)) { /* new client connection */
+            cliaddr_len = sizeof(cliaddr);
+            connfd = Accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddr_len);
+
+            printf("[Serving]received from %u at PORT %d\n",
                    inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
                    ntohs(cliaddr.sin_port));
 
-            for (i = 0; i < n; i++)
-                buf[i] = toupper(buf[i]);
-            Write(connfd, buf, n);
+            for (i = 0; i < FD_SETSIZE; i++)
+                if (client[i] < 0) {
+                    client[i] = connfd; /* save descriptor */
+                    break;
+                }
+            if (i == FD_SETSIZE) {
+                fputs("too many clients\n", stderr);
+                exit(1);
+            }
+
+            FD_SET(connfd, &allset); /* add new descriptor to set */
+            if (connfd > maxfd)
+                maxfd = connfd; /* for select */
+            if (i > maxi)
+                maxi = i; /* max index in client[] array */
+
+            if (--nready == 0)
+                continue; /* no more readable descriptors */
         }
-        Close(connfd);
+
+        for (i = 0; i <= maxi; i++) { /* check all clients for data */
+            if ((sockfd = client[i]) < 0)
+                continue;
+            if (FD_ISSET(sockfd, &rset)) {
+                if ((n = Read(sockfd, buf, MAXLINE)) == 0) {
+                    /* connection closed by client */
+                    Close(sockfd);
+                    FD_CLR(sockfd, &allset);
+                    client[i] = -1;
+                } else {
+                    int j;
+                    for (j = 0; j < n; j++)
+                        buf[j] = toupper(buf[j]);
+                    Write(sockfd, buf, n);
+                }
+
+                if (--nready == 0)
+                    break; /* no more readable descriptors */
+            }
+        }
     }
     return 0;
 }
