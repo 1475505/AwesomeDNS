@@ -53,6 +53,8 @@ int main(int argc, char* argv[]) {
                inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
                ntohs(cliaddr.sin_port));
 
+        LOG(2, buf);
+        
         for (i = 0; i < n; i++)
             buf[i] = toupper(buf[i]);
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,

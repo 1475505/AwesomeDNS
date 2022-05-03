@@ -4,5 +4,6 @@
 #include <stdint.h>
 
 uint32_t ip2hex(char* ip);
+void LOG(int legal, char* info);
 
 #endif
