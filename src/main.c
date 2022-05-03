@@ -18,7 +18,7 @@
 #include "utils.h"
 
 #define MAXLINE 80
-#define SERV_PORT 53000
+#define SERV_PORT 53
 
 extern int debug_info;
 extern char serverName[16];

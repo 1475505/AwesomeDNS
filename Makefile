@@ -87,5 +87,5 @@ clean:
 	@echo Cleanup complete!
 
 run: all
-	./$(OUTPUTMAIN)
+	sudo./$(OUTPUTMAIN)
 	@echo Executing 'run: all' complete!

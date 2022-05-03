@@ -1,7 +1,6 @@
 make main --dry-run --keep-going --print-directory
 make: Entering directory '/home/ll/AwesomeDNS'
  
-gcc -Wall -Wextra -g -Iinclude -c src/main.c  -o src/main.o
-gcc -Wall -Wextra -g -Iinclude -o output/main src/config.o src/main.o  -Llib
+gcc -Wall -Wextra -g -Iinclude -o output/main src/Socket.o src/config.o src/main.o src/utils.o  -Llib
 make: Leaving directory '/home/ll/AwesomeDNS'
  

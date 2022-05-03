@@ -1,6 +1,4 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
-make: *** No rule to make target 'src/config.o', needed by 'main'.  Stop.
-
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -8,7 +6,7 @@ make: *** No rule to make target 'src/config.o', needed by 'main'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue May  3 10:44:05 2022
+# Make data base, printed on Tue May  3 21:36:31 2022
 
 # Variables
 
@@ -24,6 +22,7 @@ DESKTOP_SESSION = ubuntu
 .SHELLFLAGS := -c
 # environment
 XDG_SESSION_CLASS = user
+ 
 # makefile (from 'Makefile', line 21)
 SRC := src
 # environment
@@ -71,7 +70,7 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # environment
 USERNAME = ll
 # makefile (from 'Makefile', line 54)
-SOURCES := src/config.c src/main.c
+SOURCES := src/Socket.c src/config.c src/main.c src/utils.c
 # environment
 MAKELEVEL := 0
 # environment
@@ -185,6 +184,7 @@ CONDA_DEFAULT_ENV = base
 # default
 MAKE = $(MAKE_COMMAND)
 # default
+ 
 MAKECMDGOALS := all
 # environment
 QT_IM_MODULE = ibus
@@ -293,20 +293,19 @@ LC_IDENTIFICATION = zh_CN.UTF-8
 # default
 .RECIPEPREFIX := 
 # makefile (from 'Makefile', line 57)
-OBJECTS := src/config.o src/main.o
+OBJECTS := src/Socket.o src/config.o src/main.o src/utils.o
 # environment
 http_proxy = http://127.0.0.1:7890/
 # environment
 LC_ADDRESS = zh_CN.UTF-8
 # environment
 LANG = C
- 
 # environment
 VSCODE_PID = 6093
 # environment
 _CE_CONDA = 
 # variable set hash-table stats:
-# Load=146/1024=14%, Rehash=0, Collisions=25/199=13%
+# Load=146/1024=14%, Rehash=0, Collisions=25/209=12%
 
 # Pattern-specific Variable Values
 
@@ -315,9 +314,9 @@ _CE_CONDA =
 # Directories
 
 # . (device 66312, inode 483615): 13 files, no impossibilities.
-# src (device 66312, inode 483679): 5 files, no impossibilities.
+# src (device 66312, inode 483679): 14 files, no impossibilities.
 
-# 18 files, no impossibilities in 2 directories.
+# 27 files, no impossibilities in 2 directories.
 
 # Implicit Rules
 
@@ -329,10 +328,14 @@ all: output main
 #  Command line target.
 #  Implicit rule search has not been done.
 #  File does not exist.
-#  File has not been updated.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/10=0%
 #  recipe to execute (from 'Makefile', line 68):
 	@echo Executing 'all' complete!
 
+ 
 .PHONY: clean
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -340,6 +343,13 @@ all: output main
 
 # Not a target:
 src/main.o:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-03 21:22:15.974708445
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.SUFFIXES:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -347,7 +357,7 @@ src/main.o:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-05-03 10:43:26.421410231
+#  Last modified 2022-05-03 21:32:25.053285049
 #  File has been updated.
 #  Successfully updated.
 
@@ -359,17 +369,31 @@ Makefile:
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
 # Not a target:
+src/utils.o:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-03 13:17:40.141899483
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
 .DEFAULT:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
+
+# Not a target:
+src/Socket.o:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-03 18:42:48.899603058
+#  File has been updated.
+#  Successfully updated.
 
 run: all
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 90):
-	./$(OUTPUTMAIN)
+	sudo./$(OUTPUTMAIN)
 	@echo Executing 'run: all' complete!
 
 clean:
@@ -385,38 +409,60 @@ clean:
 # Not a target:
 src/config.o:
 #  Implicit rule search has been done.
-#  File does not exist.
-#  File has not been updated.
+#  Last modified 2022-05-03 12:29:27.920572122
+#  File has been updated.
+#  Successfully updated.
 
-main: src/config.o src/main.o
+main: src/Socket.o src/config.o src/main.o src/utils.o
 #  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
 #  File does not exist.
-#  File has not been updated.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := main
+# automatic
+# % := 
+# automatic
+# * := 
+# automatic
+# + := src/Socket.o src/config.o src/main.o src/utils.o
+# automatic
+# | := 
+# automatic
+# < := src/Socket.o
+# automatic
+# ^ := src/Socket.o src/config.o src/main.o src/utils.o
+# automatic
+ 
+# ? := src/Socket.o src/config.o src/main.o src/utils.o
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=2/18=11%
 #  recipe to execute (from 'Makefile', line 74):
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
 
 output:
 #  Implicit rule search has not been done.
-#  Last modified 2022-05-03 10:43:16.287705132
+#  Last modified 2022-05-03 21:27:17.05327358
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 71):
 	$(MD) $(OUTPUT)
 
 # files hash-table stats:
-# Load=12/1024=1%, Rehash=0, Collisions=0/32=0%
+# Load=14/1024=1%, Rehash=0, Collisions=0/37=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 28 / storage = 222 B / avg = 7 B
-# current buf: size = 8162 B / used = 222 B / count = 28 / avg = 7 B
+# strcache buffers: 1 (0) / strings = 39 / storage = 320 B / avg = 8 B
+# current buf: size = 8162 B / used = 320 B / count = 39 / avg = 8 B
 
-# strcache performance: lookups = 48 / hit rate = 41%
+# strcache performance: lookups = 60 / hit rate = 35%
 # hash-table stats:
-# Load=28/8192=0%, Rehash=0, Collisions=2/48=4%
-# Finished Make data base on Tue May  3 10:44:05 2022
+# Load=39/8192=0%, Rehash=0, Collisions=2/60=3%
+# Finished Make data base on Tue May  3 21:36:31 2022
 
  
