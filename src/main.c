@@ -21,8 +21,8 @@
 #define SERV_PORT 53
 
 extern int debug_info;
-extern char* serverName;
-extern char* configFile;
+extern char serverName[16];
+extern char configFile[64];
 
 int main(int argc, char* argv[]) {
     config(argc, argv);

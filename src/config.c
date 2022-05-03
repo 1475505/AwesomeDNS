@@ -13,7 +13,7 @@
 
 uint8_t debug_info = 0;
 char serverName[16] = "202.106.0.20";//default
-char* configFile = "../dnsrelay.txt";//default
+char configFile[64] = "../dnsrelay.txt";//default
 
 void config(int argc, char* argv[]){
     //todo
