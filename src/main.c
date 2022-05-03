@@ -39,8 +39,7 @@ int main(int argc, char* argv[]) {
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    char DNSaddress[16] = "127.0.0.53";
-    servaddr.sin_addr.s_addr = htonl(ip2hex(DNSaddress));
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
     Bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
@@ -64,7 +63,7 @@ int main(int argc, char* argv[]) {
             cliaddr_len = sizeof(cliaddr);
             connfd = Accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddr_len);
 
-            printf("[Serving]received from %u at PORT %d\n",
+            printf("[Serving]Client %u:%d\n",
                    inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
                    ntohs(cliaddr.sin_port));
 
@@ -99,6 +98,9 @@ int main(int argc, char* argv[]) {
                     client[i] = -1;
                 } else {
                     //TODO!!!
+                    //Now buf[] is the message. Process it.
+                    
+
                     int j;
                     for (j = 0; j < n; j++)
                         buf[j] = toupper(buf[j]);

@@ -9,7 +9,7 @@ sudo vim /etc/systemd/resolved.conf
 ```
 
 **Then uncomment the DNS= line and the DNSStubListener= line.** 
-- change the DNS= value in this file to the DNS server you want to use (e.g.`127.0.0.53` to use this local proxy. 1.1.1.1 to use the Cloudflare DNS, etc.)
+- change the DNS= value in this file to the DNS server you want to use (e.g.`127.0.0.1` to use this local proxy. 1.1.1.1 to use the Cloudflare DNS, etc.)
 - change the DNSStubListener= value from yes to `no`.
 
 then
@@ -27,6 +27,8 @@ sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 Port 53 should now be free on your Ubuntu system, and you shouldn't be getting errors like "bind: address already in use" anymore. try  `sudo lsof -i :53`.
 
+Try connect to the Ethernet, the program will output
+`[Serving]`
 
 ## Recover
 
