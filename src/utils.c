@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 
+extern uint8_t debug_info;
+
 uint32_t ip2hex(char* ip) {
     uint32_t ans = 0;
     uint8_t bias = 24;
@@ -13,4 +15,11 @@ uint32_t ip2hex(char* ip) {
         bias -= 8;
     }
     return ans;
+}
+
+void LOG(int legal, char* info){
+    if (legal >= debug_info){
+        printf("%s\n",info);
+    }
+    return;
 }
