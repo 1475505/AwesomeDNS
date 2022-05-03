@@ -15,9 +15,14 @@
 #include <netinet/in.h>
 #include "config.h"
 #include "DNS.h"
+#include "utils.h"
 
 #define MAXLINE 80
 #define SERV_PORT 53
+
+extern int debug_info;
+extern char* serverName;
+extern char* configFile;
 
 int main(int argc, char* argv[]) {
     config(argc, argv);
@@ -32,7 +37,7 @@ int main(int argc, char* argv[]) {
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_addr.s_addr = htonl(ip2hex(serverName));
     servaddr.sin_port = htons(SERV_PORT);
 
     bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));

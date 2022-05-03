@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-uint16_t ip2hex(char* ip);
+uint32_t ip2hex(char* ip);
 
 #endif

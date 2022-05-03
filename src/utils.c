@@ -2,14 +2,15 @@
 #include <stdint.h>
 #include <string.h>
 
-uint16_t ip2hex(char* ip) {
-    uint8_t len = strlen(ip);
+uint32_t ip2hex(char* ip) {
     uint32_t ans;
+    uint8_t bias = 24;
     char* token = strtok(ip, ".");
     while (token != NULL) {
         int tmp = atoi(token);
-        //todo
-        token = strtok(NULL, " ");
+        token = strtok(NULL, ".");
+        ans += tmp << bias;
+        bias -= 8;
     }
     return ans;
 }
