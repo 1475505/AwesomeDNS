@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <elf.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include "Socket.h"
@@ -23,6 +22,7 @@
 #define MAXLINE 512
 #define SERV_PORT 53
 
+
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
@@ -32,6 +32,9 @@ void DNS_process_test(char* buf, int len);
 
 int main(int argc, char* argv[]) {
     config(argc, argv);
+#ifdef DEBUG
+    debug_info = 2;
+#endif
     struct sockaddr_in servaddr, cliaddr;
     socklen_t cliaddr_len;
     int sockfd;
@@ -58,9 +61,9 @@ int main(int argc, char* argv[]) {
         inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str));
         printf("[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
 
-        // LOG(2, buf);
+        LOG(2, "%s\n", buf);
 
-        DNS_process(buf, n);//You can use _test to test connection.
+        DNS_process(buf, n);  // You can use _test to test connection.
 
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
                    sizeof(cliaddr));
@@ -101,7 +104,8 @@ void DNS_process(char* buf, int len) {
     DNSresp.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
     DNSresp.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
     DNSresp.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
-    DNSresp.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
+    DNSresp.additional =
+        (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
 
     for (int i = 0; i < dnsHeader.QDcount; i++) {
         char url[128];

@@ -21,13 +21,13 @@ uint32_t ip2hex(char* ip) {
     return ans;
 }
 
-void LOG(int legal, char* info) {
-    if (legal >= debug_info) {
-        printf("[LOG %d]", legal);
-        fputs(info, stdout);
-    }
-    return;
-}
+// void LOG(int legal, char* info) {
+//     if (legal >= debug_info) {
+//         printf("[LOG %d]", legal);
+//         fputs(info, stdout);
+//     }
+//     return;
+// }
 
 /* trans `name` to dot url in res.
    eg. 60700773xyz0 -> 070077.xyz
