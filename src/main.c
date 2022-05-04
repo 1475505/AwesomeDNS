@@ -118,7 +118,8 @@ void DNS_process(char* buf, int len) {
                 uint16_t data[2];
                 uint8_t found = 0;
                 uint32_t ip = findIP(url, &found);
-                if (!found) dnsrespHeader.info |= 3;
+                if (ip == 0) dnsrespHeader.info |= 3;
+                //if (!found) connectCloudDNS();
                 memcpy(data, &ip, sizeof data);
                 dns.answer[i].Rdata = data;
                 break;
