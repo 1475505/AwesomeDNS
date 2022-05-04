@@ -17,100 +17,113 @@
 #include "DNS.h"
 #include "utils.h"
 
-#define MAXLINE 80
+#define MAXLINE 512
 #define SERV_PORT 53
 
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
 
+void DNS_process(char* buf, int len);
+void DNS_process_test(char* buf, int len);
+
 int main(int argc, char* argv[]) {
     config(argc, argv);
-    int i, maxi, maxfd, listenfd, connfd, sockfd;
-    int nready, client[FD_SETSIZE];
-    ssize_t n;
-    fd_set rset, allset;
+    struct sockaddr_in servaddr, cliaddr;
+    socklen_t cliaddr_len;
+    int sockfd;
     char buf[MAXLINE];
     char str[INET_ADDRSTRLEN];
-    socklen_t cliaddr_len;
-    struct sockaddr_in cliaddr, servaddr;
+    int i, n;
 
-    listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+    sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
-    Bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
+    Bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
 
-    Listen(listenfd, 20);
+    printf("Accepting connections ...\n");
+    while (1) {
+        cliaddr_len = sizeof(cliaddr);
+        n = recvfrom(sockfd, buf, MAXLINE, 0, (struct sockaddr*)&cliaddr,
+                     &cliaddr_len);
+        if (n == -1)
+            perr_exit("recvfrom error");
+        inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str));
+        printf("[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
 
-    maxfd = listenfd; /* initialize */
-    maxi = -1;        /* index into client[] array */
-    for (i = 0; i < FD_SETSIZE; i++)
-        client[i] = -1; /* -1 indicates available entry */
-    FD_ZERO(&allset);
-    FD_SET(listenfd, &allset);
+        // LOG(2, buf);
 
-    for (;;) {
-        rset = allset; /* structure assignment */
-        nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
-        if (nready < 0)
-            perr_exit("select error");
+        DNS_process(buf, n);
 
-        if (FD_ISSET(listenfd, &rset)) { /* new client connection */
-            cliaddr_len = sizeof(cliaddr);
-            connfd = Accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddr_len);
+        n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
+                   sizeof(cliaddr));
 
-            printf("[Serving]Client %u:%d\n",
-                   inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
-                   ntohs(cliaddr.sin_port));
-
-            for (i = 0; i < FD_SETSIZE; i++)
-                if (client[i] < 0) {
-                    client[i] = connfd; /* save descriptor */
-                    break;
-                }
-            if (i == FD_SETSIZE) {
-                fputs("too many clients\n", stderr);
-                exit(1);
-            }
-
-            FD_SET(connfd, &allset); /* add new descriptor to set */
-            if (connfd > maxfd)
-                maxfd = connfd; /* for select */
-            if (i > maxi)
-                maxi = i; /* max index in client[] array */
-
-            if (--nready == 0)
-                continue; /* no more readable descriptors */
-        }
-
-        for (i = 0; i <= maxi; i++) { /* check all clients for data */
-            if ((sockfd = client[i]) < 0)
-                continue;
-            if (FD_ISSET(sockfd, &rset)) {
-                if ((n = Read(sockfd, buf, MAXLINE)) == 0) {
-                    /* connection closed by client */
-                    Close(sockfd);
-                    FD_CLR(sockfd, &allset);
-                    client[i] = -1;
-                } else {
-                    //TODO!!!
-                    //Now buf[] is the message. Process it.
-                    
-
-                    int j;
-                    for (j = 0; j < n; j++)
-                        buf[j] = toupper(buf[j]);
-                    Write(sockfd, buf, n);
-                }
-
-                if (--nready == 0)
-                    break; /* no more readable descriptors */
-            }
-        }
+        // LOG(2, strcat("Send:", buf));
+        if (n == -1)
+            perr_exit("sendto error");
     }
+
     return 0;
+}
+
+void DNS_process(char* buf, int len) {
+    DNSHeader dnsHeader;
+    memcpy(&dnsHeader, buf, sizeof dnsHeader);
+    // dnsHeader->info;
+    Qsection q[dnsHeader.QDcount];
+    RRformat rr_q[dnsHeader.ANcount];
+    RRformat rr_auth[dnsHeader.NScount];
+    RRformat rr_add[dnsHeader.ARcount];
+    DNS dns;
+    dns.header = dnsHeader;
+    dns.question = q;
+    dns.answer = rr_q;
+    dns.authority = rr_auth;
+    dns.additional = rr_add;
+    memcpy(&dns, buf, sizeof dns);  //?
+    for (int i = 0; i < dnsHeader.QDcount; i++) {
+        char url[128];
+        // getURL(q[i].Qname, url);(BUG)
+        switch (q[i].Qtype) {  // todo
+            case 2:
+                //fallthrough
+            case 1:
+                rr_q->RDlength = 4;
+                uint16_t data[2];
+                uint32_t ip = findIP(url);
+                //if (not found) DNSrespheader.info |= 3;
+                memcpy(data, &ip, sizeof data);
+                rr_q[i].Rdata = data;
+                break;
+            case 5:
+                rr_q[i].Rdata = url;//todo: should return 别名
+                break;
+            default:
+                break;
+        }
+        // TODO: should wrap, not epoll.
+        rr_q->name = q[i].Qname;
+        rr_q->type = q[i].Qtype;
+        rr_q->class = 1;// for Internet. Fixed.
+        rr_q->TTL = 2;// I guess
+    }
+
+    //----
+    DNS DNSresp;
+    DNSHeader dnsrespHeader;
+    dnsrespHeader.info |= (0x8000);
+    DNSresp.question = q;
+    DNSresp.answer = rr_q;
+    DNSresp.authority = rr_auth;
+    DNSresp.additional = rr_add;
+    memcpy(buf, &DNSresp, sizeof DNSresp);
+}
+
+void DNS_process_test(char* buf, int len) {
+    for (int i = 0; i < len; i++)
+        buf[i] = toupper(buf[i]);
 }

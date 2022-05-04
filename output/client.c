@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 
 #define MAXLINE 80
-#define SERV_PORT 53000
+#define SERV_PORT 53
 
 int main(int argc, char* argv[]) {
     struct sockaddr_in servaddr;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
         write(sockfd, buf, strlen(buf));if (n == 0)
 			printf("the other side has been closed.\n");
 		else
-			Write(STDOUT_FILENO, buf, n);
+			write(STDOUT_FILENO, buf, n);
         n = read(sockfd, buf, MAXLINE);
         printf("Response from server:\n");
         if (n == 0)

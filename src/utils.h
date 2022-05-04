@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 uint32_t ip2hex(char* ip);
-void LOG(int, char*);
+uint32_t getURL(char* name, char*);
+void LOG(int legal, char* info);
 
 #endif

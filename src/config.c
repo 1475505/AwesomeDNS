@@ -1,10 +1,11 @@
 #include "config.h"
+#include "Socket.h"
+#include <netinet/in.h>
+#include <unistd.h>
 #include <stdint.h>
 #include <ctype.h>
-// extern uint8_t debug_info;
-// extern char* serverName;
-// extern char* configFile;
-
+#include <string.h>
+#include <stdio.h>
 /* 
 0 - 无调试信息输出
 1[-d] - 仅输出时间坐标，序号，客户端IP地址，查询的域名
@@ -35,4 +36,39 @@ void config(int argc, char* argv[]){
         else if (i + 1 == argc) strcpy(configFile, argv[i]);
     }
     return;
+}
+
+/* url has been dotted by called `getURL`. now Search the file to get ip */
+uint32_t findIP(char* name){
+    fopen(configFile, "r");
+    //todo
+    return 0;
+}
+
+void connectCloudDNS(){// connect to cloud DNS code outline. TODO
+    struct sockaddr_in servaddr;
+	int sockfd, n;
+	char buf[512];
+	char str[INET_ADDRSTRLEN];
+	socklen_t servaddr_len;
+    
+	sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	inet_pton(AF_INET, serverName, &servaddr.sin_addr);
+	servaddr.sin_port = htons(53);
+    
+	while (fgets(buf, 512, stdin) != NULL) {
+		n = sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+		if (n == -1)
+			perr_exit("sendto error");
+
+		n = recvfrom(sockfd, buf, 512, 0, NULL, 0);
+		if (n == -1)
+			perr_exit("recvfrom error");
+	  
+		Write(STDOUT_FILENO, buf, n);
+	}
+	Close(sockfd);
 }
