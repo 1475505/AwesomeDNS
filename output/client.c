@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 
 #define MAXLINE 80
-#define SERV_PORT 53000
+#define SERV_PORT 53
 
 int main(int argc, char* argv[]) {
     struct sockaddr_in servaddr;

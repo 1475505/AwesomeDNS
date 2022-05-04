@@ -25,3 +25,8 @@ void LOG(int legal, char* info){
     }
     return;
 }
+
+uint32_t getIP(uint8_t** name){
+    //todo
+    return 0;
+}

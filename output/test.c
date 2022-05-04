@@ -25,6 +25,6 @@ void LOG(char* str){
 
 int main(){
     char ip[16]="202.106.0.20";
-    LOG(ip);
+    LOG(strcat("test",ip));
     return 0;
 }

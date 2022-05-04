@@ -12,7 +12,7 @@
             "externalConsole": false,
             "linux": {
                 "MIMode": "gdb",
-                "miDebuggerPath": "/usr/bin/gdb",
+                "miDebuggerPath": "/home/ll/.gdbroot",
                 "program": "${fileDirname}/../output/main"
             },
             "osx": {

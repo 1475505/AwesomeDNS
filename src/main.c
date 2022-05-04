@@ -24,6 +24,9 @@ extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
 
+void DNS_process(char* buf, int len);
+void DNS_process_test(char* buf, int len);
+
 int main(int argc, char* argv[]) {
     config(argc, argv);
     struct sockaddr_in servaddr, cliaddr;
@@ -50,21 +53,65 @@ int main(int argc, char* argv[]) {
         if (n == -1)
             perr_exit("recvfrom error");
         inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str));
-        printf("[serving]%s:%d...\n",
-               &str,
-               ntohs(cliaddr.sin_port));
+        printf("[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
 
-        LOG(2, strcat("Receive:", buf));
-        //DNS_process(buf);
+        // LOG(2, buf);
 
-        for (i = 0; i < n; i++)
-            buf[i] = toupper(buf[i]);
+        DNS_process(buf, n);
+
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
                    sizeof(cliaddr));
-        //LOG(2, strcat("Send:", buf));
+
+        // LOG(2, strcat("Send:", buf));
         if (n == -1)
             perr_exit("sendto error");
     }
 
     return 0;
+}
+
+void DNS_process(char* buf, int len) {
+    DNSHeader dnsHeader;
+    memcpy(&dnsHeader, buf, sizeof dnsHeader);
+    // dnsHeader->info;
+    Qsection q[dnsHeader.QDcount];
+    RRformat rr_q[dnsHeader.ANcount];
+    RRformat rr_auth[dnsHeader.NScount];
+    RRformat rr_add[dnsHeader.ARcount];
+    DNS dns;
+    dns.header = dnsHeader;
+    dns.question = q;
+    dns.answer = rr_q;
+    dns.authority = rr_auth;
+    dns.additional = rr_add;
+    memcpy(&dns, buf, sizeof dns);  //?
+    for (int i = 0; i < dnsHeader.QDcount; i++) {
+        // GetIp();
+        switch (q[i].Qtype) {  // todo
+            case 1:
+                //findIP(name);
+                break;
+            case 5:
+                break;
+            case 2:
+                break;
+            default:
+                break;
+        }
+    }
+
+    //----
+    DNS DNSresp;
+    DNSHeader dnsrespHeader;
+    dnsrespHeader.info |= (0x8000);
+    DNSresp.question = q;
+    DNSresp.answer = rr_q;
+    DNSresp.authority = rr_auth;
+    DNSresp.additional = rr_add;
+    memcpy(buf, &DNSresp, sizeof DNSresp);
+}
+
+void DNS_process_test(char* buf, int len) {
+    for (int i = 0; i < len; i++)
+        buf[i] = toupper(buf[i]);
 }

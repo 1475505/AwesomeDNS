@@ -36,3 +36,9 @@ void config(int argc, char* argv[]){
     }
     return;
 }
+
+uint32_t findIP(char* name){
+    fopen(configFile, "r");
+    //todo
+    return 0;
+}

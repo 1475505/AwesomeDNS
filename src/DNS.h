@@ -36,7 +36,7 @@ typedef struct DNSHeader {
 } DNSHeader;
 
 typedef struct Qsection {
-    uint16_t* Qname;  //长度+字符串+。。。+长度+字符串+0，点是不出现的。
+    uint8_t** Qname;  //长度+字符串+。。。+长度+字符串+0，点是不出现的。
 
     /*
     A(1)        IP地址,存储32bit的二进制数
