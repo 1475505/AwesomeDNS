@@ -6,8 +6,6 @@
 
 extern uint8_t debug_info;
 
-extern uint8_t debug_info;
-
 uint32_t ip2hex(char* ip) {
     uint32_t ans = 0;
     uint8_t bias = 24;
