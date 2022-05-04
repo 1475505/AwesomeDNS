@@ -1,6 +1,8 @@
 #include "config.h"
 #include <stdint.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdio.h>
 // extern uint8_t debug_info;
 // extern char* serverName;
 // extern char* configFile;
@@ -37,6 +39,7 @@ void config(int argc, char* argv[]){
     return;
 }
 
+/* url has been dotted by called `getURL`. now Search the file to get ip */
 uint32_t findIP(char* name){
     fopen(configFile, "r");
     //todo

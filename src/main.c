@@ -86,18 +86,29 @@ void DNS_process(char* buf, int len) {
     dns.additional = rr_add;
     memcpy(&dns, buf, sizeof dns);  //?
     for (int i = 0; i < dnsHeader.QDcount; i++) {
-        // GetIp();
+        char url[128];
+        // getURL(q[i].Qname, url);(BUG)
         switch (q[i].Qtype) {  // todo
             case 1:
-                //findIP(name);
+                rr_q->RDlength = 4;
+                uint16_t data[2];
+                uint32_t ip = findIP(url);
+                memcpy(data, &ip, sizeof data);
+                rr_q[i].Rdata = data;
                 break;
             case 5:
+                rr_q[i].Rdata = url;//should return 别名
                 break;
             case 2:
                 break;
             default:
                 break;
         }
+        // TODO: should wrap, not epoll.
+        rr_q->name = q[i].Qname;
+        rr_q->type = q[i].Qtype;
+        rr_q->class = 1;// for Internet. Fixed.
+        rr_q->TTL = 2;// I guess
     }
 
     //----

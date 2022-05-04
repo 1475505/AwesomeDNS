@@ -18,15 +18,34 @@ uint32_t ip2hex(char* ip) {
     return ans;
 }
 
-void LOG(int legal, char* info){
-    if (legal >= debug_info){
-        printf("[LOG %d]",legal);
+void LOG(int legal, char* info) {
+    if (legal >= debug_info) {
+        printf("[LOG %d]", legal);
         fputs(info, stdout);
     }
     return;
 }
 
-uint32_t getIP(uint8_t** name){
-    //todo
-    return 0;
+/* trans `name` to dot url in res.
+   eg. 60700773xyz0 -> 070077.xyz
+   */
+uint32_t getURL(char* name, char* res) {
+    int len = strlen(name);
+    int idx = 0;
+    int bias = name[0] - '0';
+    int i = 1;
+    while (i < len) {
+        for (int j = 0; j < bias; j++) {
+            res[idx] = name[i];
+            idx++;
+            i++;
+        }
+        bias = name[i] - '0';
+        if (bias == 0 || i >= len) break;
+        i++;
+        res[idx] = '.';
+        idx++;
+    }
+    res[idx] = '\0';
+    return idx;
 }
