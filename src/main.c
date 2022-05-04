@@ -116,8 +116,9 @@ void DNS_process(char* buf, int len) {
             case 1:
                 dns.answer[i].RDlength = 4;
                 uint16_t data[2];
-                uint32_t ip = findIP(url);
-                // if (not found) DNSrespheader.info |= 3;
+                uint8_t found = 0;
+                uint32_t ip = findIP(url, &found);
+                if (!found) dnsrespHeader.info |= 3;
                 memcpy(data, &ip, sizeof data);
                 dns.answer[i].Rdata = data;
                 break;

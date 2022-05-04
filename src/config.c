@@ -40,12 +40,13 @@ void config(int argc, char* argv[]){
 }
 
 /* url has been dotted by called `getURL`. now Search the file to get ip */
-uint32_t findIP(char* name){
+uint32_t findIP(char* name, uint8_t* found){
     FILE* fp = fopen(configFile, "r");
     char ip[16];
     char url[64];
     while (fscanf(fp, "%s %s", ip, url) != EOF){
         if (strcmp(name, url) == 0){
+            found = 1;
             return inet_pton(ip);
         }
     }
