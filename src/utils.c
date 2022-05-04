@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 extern uint8_t debug_info;
 
@@ -30,6 +31,7 @@ void LOG(int legal, char* info) {
    eg. 60700773xyz0 -> 070077.xyz
    */
 uint32_t getURL(char* name, char* res) {
+    assert(name);
     int len = strlen(name);
     int idx = 0;
     int bias = name[0] - '0';

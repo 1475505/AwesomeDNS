@@ -6,13 +6,16 @@
 - 表中未检到该域名，则向因特网DNS服务器发出查询，并将结果返给客户端（中继功能）
      考虑多个计算机上的客户端会同时查询，需要进行消息ID的转换
 */
-
+#define DEBUG
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <elf.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include "Socket.h"
 #include <netinet/in.h>
+#include <assert.h>
 #include "config.h"
 #include "DNS.h"
 #include "utils.h"
@@ -57,7 +60,7 @@ int main(int argc, char* argv[]) {
 
         // LOG(2, buf);
 
-        DNS_process(buf, n);
+        DNS_process(buf, n);//You can use _test to test connection.
 
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
                    sizeof(cliaddr));
@@ -74,52 +77,58 @@ void DNS_process(char* buf, int len) {
     DNSHeader dnsHeader;
     memcpy(&dnsHeader, buf, sizeof dnsHeader);
     // dnsHeader->info;
-    Qsection q[dnsHeader.QDcount];
-    RRformat rr_q[dnsHeader.ANcount];
-    RRformat rr_auth[dnsHeader.NScount];
-    RRformat rr_add[dnsHeader.ARcount];
+#ifdef DEBUG
+    assert(sizeof(dnsHeader) == 12);
+#endif
+    // Qsection q[dnsHeader.QDcount];
+    // RRformat rr_q[dnsHeader.ANcount];
+    // RRformat rr_auth[dnsHeader.NScount];
+    // RRformat rr_add[dnsHeader.ARcount];
     DNS dns;
     dns.header = dnsHeader;
-    dns.question = q;
-    dns.answer = rr_q;
-    dns.authority = rr_auth;
-    dns.additional = rr_add;
-    memcpy(&dns, buf, sizeof dns);  //?
+    dns.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
+    dns.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
+    dns.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
+    dns.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
+    memcpy(&dns, buf, sizeof dns);
+#ifdef DEBUG
+    assert(sizeof(dns) >= 12);
+#endif
+    DNS DNSresp;
+    DNSHeader dnsrespHeader;
+    dnsrespHeader.info |= (0x8000);
+    DNSresp.header = dnsrespHeader;
+    DNSresp.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
+    DNSresp.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
+    DNSresp.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
+    DNSresp.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
+
     for (int i = 0; i < dnsHeader.QDcount; i++) {
         char url[128];
-        // getURL(q[i].Qname, url);(BUG)
-        switch (q[i].Qtype) {  // todo
+        getURL(dns.question[i].Qname, url);  //(BUG)
+        switch (dns.question[i].Qtype) {     // todo
             case 2:
-                //fallthrough
+                // fallthrough
             case 1:
-                rr_q->RDlength = 4;
+                dns.answer[i].RDlength = 4;
                 uint16_t data[2];
                 uint32_t ip = findIP(url);
-                //if (not found) DNSrespheader.info |= 3;
+                // if (not found) DNSrespheader.info |= 3;
                 memcpy(data, &ip, sizeof data);
-                rr_q[i].Rdata = data;
+                dns.answer[i].Rdata = data;
                 break;
             case 5:
-                rr_q[i].Rdata = url;//todo: should return 别名
+                dns.answer[i].Rdata = url;  // todo: should return 别名
                 break;
             default:
                 break;
         }
         // TODO: should wrap, not epoll.
-        rr_q->name = q[i].Qname;
-        rr_q->type = q[i].Qtype;
-        rr_q->class = 1;// for Internet. Fixed.
-        rr_q->TTL = 2;// I guess
+        DNSresp.answer[i].name = dns.question[i].Qname;
+        DNSresp.answer[i].type = dns.question[i].Qtype;
+        DNSresp.answer[i].class = 1;  // for Internet. Fixed.
+        DNSresp.answer[i].TTL = 2;    // I guess
     }
-
-    //----
-    DNS DNSresp;
-    DNSHeader dnsrespHeader;
-    dnsrespHeader.info |= (0x8000);
-    DNSresp.question = q;
-    DNSresp.answer = rr_q;
-    DNSresp.authority = rr_auth;
-    DNSresp.additional = rr_add;
     memcpy(buf, &DNSresp, sizeof DNSresp);
 }
 

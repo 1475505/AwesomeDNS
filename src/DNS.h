@@ -66,10 +66,10 @@ typedef struct RRformat {
 // DNS 报文.后三段格式相同，每段都是由0~n个资源记录(Resource Record)构成
 typedef struct DNS {
     DNSHeader header;
-    uint16_t* question;    // the question for the name server
-    uint16_t* answer;      // RRs answering the question
-    uint16_t* authority;   // RRs pointing toward an authority
-    uint16_t* additional;  // RRs holding additional information
+    Qsection* question;    // the question for the name server
+    RRformat* answer;      // RRs answering the question
+    RRformat* authority;   // RRs pointing toward an authority
+    RRformat* additional;  // RRs holding additional information
 } DNS;
 
 #endif
