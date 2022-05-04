@@ -1,3 +1,7 @@
+## 5.4
+
+May need to reorder(big/little endian) when set bit in header.info
+
 <-- for writing report-->:
 
 - Need to bind DNS via UDP instead of TCP in branch `main`.

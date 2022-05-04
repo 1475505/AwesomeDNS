@@ -89,17 +89,18 @@ void DNS_process(char* buf, int len) {
         char url[128];
         // getURL(q[i].Qname, url);(BUG)
         switch (q[i].Qtype) {  // todo
+            case 2:
+                //fallthrough
             case 1:
                 rr_q->RDlength = 4;
                 uint16_t data[2];
                 uint32_t ip = findIP(url);
+                //if (not found) DNSrespheader.info |= 3;
                 memcpy(data, &ip, sizeof data);
                 rr_q[i].Rdata = data;
                 break;
             case 5:
-                rr_q[i].Rdata = url;//should return 别名
-                break;
-            case 2:
+                rr_q[i].Rdata = url;//todo: should return 别名
                 break;
             default:
                 break;
