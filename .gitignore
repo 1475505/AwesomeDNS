@@ -2,6 +2,7 @@
 *.pptx
 .vscode
 *.log
+gdb
 
 # Prerequisites
 *.d

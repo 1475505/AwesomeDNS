@@ -98,7 +98,7 @@ void DNS_process(char* buf, int len) {
     assert(sizeof(dns) >= 12);
 #endif
     DNS DNSresp;
-    DNSHeader dnsrespHeader;
+    DNSHeader dnsrespHeader = dnsHeader;
     dnsrespHeader.info |= (0x8000);
     DNSresp.header = dnsrespHeader;
     DNSresp.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
