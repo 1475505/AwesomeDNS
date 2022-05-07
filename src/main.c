@@ -77,38 +77,35 @@ int main(int argc, char* argv[]) {
 }
 
 void DNS_process(char* buf, int len) {
-    DNSHeader dnsHeader;
-    handleBuf(buf);
-    memcpy(&dnsHeader, buf, sizeof dnsHeader);
-    // dnsHeader->info;
-#ifdef DEBUG
-    assert(sizeof(dnsHeader) == 12);
-#endif
+// #ifdef DEBUG
+//     assert(sizeof(dnsHeader) == 12);
+// #endif
     // Qsection q[dnsHeader.QDcount];
     // RRformat rr_q[dnsHeader.ANcount];
     // RRformat rr_auth[dnsHeader.NScount];
     // RRformat rr_add[dnsHeader.ARcount];
     DNS dns;
-    dns.header = dnsHeader;
-    dns.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
-    dns.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
-    dns.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
-    dns.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
+    readHeader(buf, &dns.header);
+    dns.question = (Qsection*)malloc(dns.header.QDcount * sizeof(Qsection));
+    readQuestions(buf, dns.question, dns.header.QDcount);
+    dns.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
+    dns.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
+    dns.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
     memcpy(&dns, buf, sizeof dns);//bug, todo
     printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
     DNS DNSresp;
-    DNSHeader dnsrespHeader = dnsHeader;
+    DNSHeader dnsrespHeader = dns.header;
     dnsrespHeader.info |= (0x8000);
     DNSresp.header = dnsrespHeader;
-    DNSresp.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
-    DNSresp.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
-    DNSresp.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
-    DNSresp.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
+    DNSresp.question = (Qsection*)malloc(dns.header.QDcount * sizeof(Qsection));
+    DNSresp.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
+    DNSresp.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
+    DNSresp.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
 
-    for (int i = 0; i < dnsHeader.QDcount; i++) {
+    for (int i = 0; i < dns.header.QDcount; i++) {
         char url[128];
         getURL(dns.question[i].Qname, url);  //(BUG)
         switch (dns.question[i].Qtype) {     // todo

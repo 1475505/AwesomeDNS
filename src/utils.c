@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 #define MAXLINE 512
 
 extern uint8_t debug_info;
@@ -53,13 +54,67 @@ uint32_t getURL(char* name, char* res) {
     return idx;
 }
 
-void handleBuf(char * buf)
+void readHeader(char * buf, DNSHeader * header)
 {
-    int i;
-    for(i = 0; i < MAXLINE; i+=2)
+    header->ID = (uint16_t)(buf[0] << 8) + buf[1];
+    header->info = (uint16_t)(buf[2] << 8) + buf[3];
+    header->QDcount = (uint16_t)(buf[4] << 8) + buf[5];
+    header->ANcount = (uint16_t)(buf[6] << 8) + buf[7];
+    header->NScount = (uint16_t)(buf[8] << 8) + buf[9];
+    header->ARcount = (uint16_t)(buf[10] << 8) + buf[11];
+}
+
+/**
+ * @brief input questions
+ * 
+ * @param buf 
+ * @param questions 
+ * @param QDcount 
+ * @return size_t buf's bias
+ */
+size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount)
+{
+    size_t i, bias = 12;
+    for(i = 0; i < QDcount; i++)
     {
-        char temp = buf[i];
-        buf[i] = buf[i + 1];
-        buf[i + 1] = temp;
+        size_t size = buf[bias++], all = 0;
+        questions[i].Qname = NULL;
+        while (size)
+        {
+            all += size;
+            char * new = malloc(all * sizeof(char));
+            memset(new, 0, all);
+            if(questions[i].Qname != NULL)
+            {
+                int j;
+                for(j = 0; j < strlen(questions[i].Qname); j++)
+                {
+                    new[j] = questions[i].Qname[j];
+                }
+                free(questions[i].Qname);
+            }
+            memcpy(new + strlen(new), buf + bias, size);
+            bias += size;
+            questions[i].Qname = new;
+            size = buf[bias++];
+            if(size)
+            {
+                all++;
+                new = malloc((all) * sizeof(char));
+                memset(new, 0, all);
+                if(questions[i].Qname != NULL)
+                {
+                    int j;
+                    for(j = 0; j < strlen(questions[i].Qname); j++)
+                    {
+                        new[j] = questions[i].Qname[j];
+                    }
+                    free(questions[i].Qname);
+                }
+                new[strlen(new)] = '.';
+                questions[i].Qname = new;
+            }
+        }
     }
+    return bias;
 }
