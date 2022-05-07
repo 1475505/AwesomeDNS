@@ -12,6 +12,7 @@ if (debug_info >= x) { \
 
 uint32_t ip2hex(char* ip);
 uint32_t getURL(char* name, char*);
+void handleBuf(char * buf);
 // void LOG(int legal, char* info);
 
 #endif

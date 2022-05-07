@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
 
 void DNS_process(char* buf, int len) {
     DNSHeader dnsHeader;
+    handleBuf(buf);
     memcpy(&dnsHeader, buf, sizeof dnsHeader);
     // dnsHeader->info;
 #ifdef DEBUG
@@ -93,7 +94,8 @@ void DNS_process(char* buf, int len) {
     dns.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
     dns.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
     dns.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
-    memcpy(&dns, buf, sizeof dns);
+    memcpy(&dns, buf, sizeof dns);//bug, todo
+    printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
@@ -104,8 +106,7 @@ void DNS_process(char* buf, int len) {
     DNSresp.question = (Qsection*)malloc(dnsHeader.QDcount * sizeof(Qsection));
     DNSresp.answer = (RRformat*)malloc(dnsHeader.ANcount * sizeof(RRformat));
     DNSresp.authority = (RRformat*)malloc(dnsHeader.NScount * sizeof(RRformat));
-    DNSresp.additional =
-        (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
+    DNSresp.additional = (RRformat*)malloc(dnsHeader.ARcount * sizeof(RRformat));
 
     for (int i = 0; i < dnsHeader.QDcount; i++) {
         char url[128];

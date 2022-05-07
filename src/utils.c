@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#define MAXLINE 512
 
 extern uint8_t debug_info;
 
@@ -50,4 +51,15 @@ uint32_t getURL(char* name, char* res) {
     }
     res[idx] = '\0';
     return idx;
+}
+
+void handleBuf(char * buf)
+{
+    int i;
+    for(i = 0; i < MAXLINE; i+=2)
+    {
+        char temp = buf[i];
+        buf[i] = buf[i + 1];
+        buf[i + 1] = temp;
+    }
 }
