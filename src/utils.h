@@ -16,6 +16,7 @@ uint32_t getURL(char* name, char*);
 void handleBuf(char * buf);
 void readHeader(char * buf, DNSHeader * header);
 size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount);
+uint32_t mapIP(char* url);
 // void LOG(int legal, char* info);
 
 #endif

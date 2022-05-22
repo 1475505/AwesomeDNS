@@ -7,6 +7,7 @@
 #define MAXLINE 512
 
 extern uint8_t debug_info;
+extern char* configFile;
 
 uint32_t ip2hex(char* ip) {
     uint32_t ans = 0;
@@ -118,4 +119,9 @@ size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount)
         }
     }
     return bias;
+}
+
+uint32_t getIP(char* url){
+    //TODO: Read file and match URL, return IP.
+    return 0;
 }
