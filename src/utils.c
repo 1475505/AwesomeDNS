@@ -79,6 +79,7 @@ size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount)
     {
         size_t size = buf[bias++], all = 0;
         questions[i].Qname = NULL;
+
         while (size)
         {
             all += size;

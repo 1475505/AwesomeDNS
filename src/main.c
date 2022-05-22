@@ -91,7 +91,7 @@ void DNS_process(char* buf, int len) {
     dns.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
     dns.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
     dns.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
-    memcpy(&dns, buf, sizeof dns);//bug, todo
+    //memcpy(&dns, buf, sizeof dns);//bug, todo
     printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
