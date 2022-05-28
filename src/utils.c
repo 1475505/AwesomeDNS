@@ -78,47 +78,53 @@ size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount)
     size_t i, bias = 12;
     for(i = 0; i < QDcount; i++)
     {
-        size_t size = buf[bias++], all = 0;
-        questions[i].Qname = NULL;
-
-        while (size)
-        {
-            all += size;
-            char * new = malloc(all * sizeof(char));
-            memset(new, 0, all);
-            if(questions[i].Qname != NULL)
-            {
-                int j;
-                for(j = 0; j < strlen(questions[i].Qname); j++)
-                {
-                    new[j] = questions[i].Qname[j];
-                }
-                free(questions[i].Qname);
-            }
-            memcpy(new + strlen(new), buf + bias, size);
-            bias += size;
-            questions[i].Qname = new;
-            size = buf[bias++];
-            if(size)
-            {
-                all++;
-                new = malloc((all) * sizeof(char));
-                memset(new, 0, all);
-                if(questions[i].Qname != NULL)
-                {
-                    int j;
-                    for(j = 0; j < strlen(questions[i].Qname); j++)
-                    {
-                        new[j] = questions[i].Qname[j];
-                    }
-                    free(questions[i].Qname);
-                }
-                new[strlen(new)] = '.';
-                questions[i].Qname = new;
-            }
-        }
+        questions[i].Qname = getName(questions[i].Qname, buf, &bias);
     }
     return bias;
+}
+
+char * getName(char * name, char * buf, size_t * bias)
+{
+    size_t size = buf[(*bias)++], all = 0;
+    name = NULL;
+
+    while (size)
+    {
+        all += size;
+        char * new = malloc(all * sizeof(char));
+        memset(new, 0, all);
+        if(name != NULL)
+        {
+            int j;
+            for(j = 0; j < strlen(name); j++)
+            {
+                new[j] = name[j];
+            }
+            free(name);
+        }
+        memcpy(new + strlen(new), buf + (*bias), size);
+        (*bias) += size;
+        name = new;
+        size = buf[(*bias)++];
+        if(size)
+        {
+            all++;
+            new = malloc((all) * sizeof(char));
+            memset(new, 0, all);
+            if(name != NULL)
+            {
+                int j;
+                for(j = 0; j < strlen(name); j++)
+                {
+                    new[j] = name[j];
+                }
+                free(name);
+            }
+            new[strlen(new)] = '.';
+            name = new;
+        }
+    }
+    return name;
 }
 
 uint32_t getIP(char* url){
