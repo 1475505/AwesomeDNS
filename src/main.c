@@ -85,12 +85,16 @@ void DNS_process(char* buf, int len) {
     // RRformat rr_auth[dnsHeader.NScount];
     // RRformat rr_add[dnsHeader.ARcount];
     DNS dns;
+    size_t bias;
     readHeader(buf, &dns.header);
     dns.question = (Qsection*)malloc(dns.header.QDcount * sizeof(Qsection));
-    readQuestions(buf, dns.question, dns.header.QDcount);
+    bias = readQuestions(buf, dns.question, dns.header.QDcount);
     dns.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
+    bias = readRRs(buf, dns.answer, dns.header.ANcount, bias);
     dns.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
+    bias = readRRs(buf, dns.authority, dns.header.NScount, bias);
     dns.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
+    bias = readRRs(buf, dns.additional, dns.header.ARcount, bias);
     //memcpy(&dns, buf, sizeof dns);//bug, todo
     printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG

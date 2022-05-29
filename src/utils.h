@@ -18,6 +18,7 @@ void readHeader(char * buf, DNSHeader * header);
 size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount);
 uint32_t mapIP(char* url);
 char * getName(char * name, char * buf, size_t * bias);
+size_t readRRs(char * buf, RRformat * RRs, uint16_t RRcount, size_t bias);
 // void LOG(int legal, char* info);
 
 #endif

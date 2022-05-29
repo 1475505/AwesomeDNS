@@ -79,6 +79,35 @@ size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount)
     for(i = 0; i < QDcount; i++)
     {
         questions[i].Qname = getName(questions[i].Qname, buf, &bias);
+        questions[i].Qtype = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
+        questions[i].Qtype = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
+        bias += 4;
+    }
+    return bias;
+}
+
+size_t readRRs(char * buf, RRformat * RRs, uint16_t RRcount, size_t bias)
+{
+    size_t i;
+    for(i = 0; i < RRcount; i++)
+    {
+        RRs[i].name = getName(RRs[i].name, buf, &bias);
+        RRs[i].type = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
+        RRs[i].class = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
+        bias += 4;
+        RRs[i].TTL = (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16)
+                   + (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
+        bias += 4;
+        RRs[i].RDlength = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
+        bias += 2;
+        RRs[i].Rdata = (uint32_t *)malloc(sizeof(uint32_t) * RRs[i].RDlength);
+        size_t j;
+        for(j = 0; j < RRs[i].RDlength; j++)
+        {
+            RRs[i].Rdata[j] = (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16)
+                            + (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
+            bias += 4;
+        }
     }
     return bias;
 }
