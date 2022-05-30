@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
         inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str));
         printf("[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
 
-        LOG(2, "%s\n", buf);
+        log(2, "%s\n%s\n", buf, "llnb");
 
         DNS_process(buf, n);  // You can use _test to test connection.
 

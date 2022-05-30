@@ -160,3 +160,14 @@ uint32_t getIP(char* url){
     //TODO: Read file and match URL, return IP.
     return 0;
 }
+
+void log(int x, char* fmt, ...)
+{
+    va_list arg_ptr;
+    if(debug_info >= x)
+    {
+        va_start(arg_ptr, fmt);
+        vprintf(fmt, arg_ptr);
+        va_end(arg_ptr);
+    }
+}
