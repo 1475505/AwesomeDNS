@@ -59,9 +59,9 @@ int main(int argc, char* argv[]) {
         if (n == -1)
             perr_exit("recvfrom error");
         inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str));
-        printf("[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
+        log(0, "[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
 
-        log(2, "%s\n%s\n", buf, "llnb");
+        log(2, "%s\n", buf);
 
         DNS_process(buf, n);  // You can use _test to test connection.
 
@@ -95,11 +95,11 @@ void DNS_process(char* buf, int len) {
     bias = readRRs(buf, dns.authority, dns.header.NScount, bias);
     dns.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
     bias = readRRs(buf, dns.additional, dns.header.ARcount, bias);
-    //memcpy(&dns, buf, sizeof dns);//bug, todo
     printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
+
     DNS DNSresp;
     DNSHeader dnsrespHeader = dns.header;
     dnsrespHeader.info |= (0x8000);
@@ -108,36 +108,42 @@ void DNS_process(char* buf, int len) {
     DNSresp.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
     DNSresp.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
     DNSresp.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
-
-    for (int i = 0; i < dns.header.QDcount; i++) {
-        char url[128];
-        getURL(dns.question[i].Qname, url);  //(BUG)
-        switch (dns.question[i].Qtype) {     // todo
-            case 2:
-                // fallthrough
-            case 1:
-                dns.answer[i].RDlength = 4;
-                uint16_t data[2];
-                uint8_t found = 0;
-                uint32_t ip = findIP(url, &found);
-                if (ip == 0) dnsrespHeader.info |= 3;
-                //if (!found) connectCloudDNS();
-                memcpy(data, &ip, sizeof data);
-                dns.answer[i].Rdata = data;
-                break;
-            case 5:
-                dns.answer[i].Rdata = url;  // todo: should return 别名
-                break;
-            default:
-                break;
+    if((dns.header.info >> 15) == 1)//if it receives from client
+    {
+        for (int i = 0; i < dns.header.QDcount; i++) {
+            char url[128];
+            getURL(dns.question[i].Qname, url);  //(BUG)
+            switch (dns.question[i].Qtype) {     // todo
+                case 2:
+                    // fallthrough
+                case 1:
+                    dns.answer[i].RDlength = 4;
+                    uint16_t data[2];
+                    uint8_t found = 0;
+                    uint32_t ip = findIP(url, &found);
+                    if (ip == 0) dnsrespHeader.info |= 3;
+                    //if (!found) connectCloudDNS();
+                    memcpy(data, &ip, sizeof data);
+                    dns.answer[i].Rdata = data;
+                    break;
+                case 5:
+                    dns.answer[i].Rdata = url;  // todo: should return 别名
+                    break;
+                default:
+                    break;
+            }
+            // TODO: should wrap, not epoll.
+            DNSresp.answer[i].name = dns.question[i].Qname;
+            DNSresp.answer[i].type = dns.question[i].Qtype;
+            DNSresp.answer[i].class = 1;  // for Internet. Fixed.
+            DNSresp.answer[i].TTL = 2;    // I guess
         }
-        // TODO: should wrap, not epoll.
-        DNSresp.answer[i].name = dns.question[i].Qname;
-        DNSresp.answer[i].type = dns.question[i].Qtype;
-        DNSresp.answer[i].class = 1;  // for Internet. Fixed.
-        DNSresp.answer[i].TTL = 2;    // I guess
+        memcpy(buf, &DNSresp, sizeof DNSresp);
     }
-    memcpy(buf, &DNSresp, sizeof DNSresp);
+    else//it receives from server
+    {
+        //todo
+    }
 }
 
 void DNS_process_test(char* buf, int len) {
