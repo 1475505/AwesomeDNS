@@ -33,7 +33,7 @@ void config(int argc, char* argv[]){
     for (int i = 1; i < argc; i++){
         if (strcmp(argv[i], "-d")) debug_info = 1;
         else if (strcmp(argv[i], "-dd")) debug_info = 2;
-        else if (dotCount(argv[i]) == 0) strcpy(serverName, argv[i]);
+        else if (dotCount(argv[i]) == 1) strcpy(serverName, argv[i]);
         else if (i + 1 == argc) strcpy(configFile, argv[i]);
     }
     return;
