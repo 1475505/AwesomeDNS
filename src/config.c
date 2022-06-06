@@ -1,5 +1,6 @@
 #include "config.h"
 #include "Socket.h"
+#include <bits/getopt_core.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -29,6 +30,20 @@ int dotCount(char* ip){
 }
 
 void config(int argc, char* argv[]){
+    /* May be this is the unix way to do this */
+    int opt;
+    while ((opt = getopt(argc, argv, "d")) != -1){
+        switch (opt) {
+            case 'd':
+                debug_info = 1;
+                break;
+            case 'e':
+                debug_info = 2;
+                //use `optarg` to get the following settings.
+                break;
+        }
+    }
+    /* Above comment done */
     if (argc == 1) return;
     for (int i = 1; i < argc; i++){
         if (strcmp(argv[i], "-d")) debug_info = 1;
