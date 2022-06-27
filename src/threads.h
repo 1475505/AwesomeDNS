@@ -1,3 +1,6 @@
+#ifndef THREAD_H__
+#define THREAD_H__
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -77,3 +80,5 @@ static inline void unlock() {
 #define P sem_wait
 #define V sem_post
 #define SEM_INIT(sem, val) sem_init(&(sem), 0, val)
+
+#endif

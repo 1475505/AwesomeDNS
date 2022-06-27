@@ -1,3 +1,8 @@
+## 6.28
+!!!ATTENTION!!
+
+- if you need to use jyy's `threads.h`, you need to add `-lpthread` in compiling (config Makefike)
+
 ## 5.4
 
 May need to reorder(big/little endian) when set bit in header.info
