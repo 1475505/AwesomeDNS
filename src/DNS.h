@@ -1,22 +1,10 @@
 #ifndef DNS_H
 #define DNS_H
 
+#include <stdint.h>
 #include <unistd.h>
 
-typedef struct DNSHeader {
-    unsigned ID: 16;    /* query identification number */
-    unsigned rd: 1;     /* recursion desired */
-    unsigned tc: 1;     /* truncated message */
-    unsigned aa: 1;     /* authoritive answer */
-    unsigned opcode: 4; /* purpose of message */
-    unsigned qr: 1;     /* response flag */
-    unsigned rcode: 4;  /* response code */
-    unsigned cd: 1;     /* checking disabled by resolver */
-    unsigned ad: 1;     /* authentic data from named */
-    unsigned z: 1;      /* unused bits, must be ZERO */
-    unsigned ra: 1;     /* recursion available */
-    /*
-    *-----------------------------------------*
+ /*-----------------------------------------*
     |0 |1      4|5 |6 |7 |8 |9     12|13    15|
     |QR| Opcode |AA|TC|RD|RA|   Z    | RCODE  |
     *-----------------------------------------*
@@ -34,8 +22,19 @@ typedef struct DNSHeader {
     RCODE: 响应码(Response coded)，仅用于响应报.值为0表没有差错
            - 值为3表示名字差错。从权威名字服务器返回，表示在查询中指定域名不存在
     */
-    
-
+typedef struct DNSHeader {
+    unsigned ID: 16;    /* query identification number */
+    unsigned rd: 1;     /* recursion desired */
+    unsigned tc: 1;     /* truncated message */
+    unsigned aa: 1;     /* authoritive answer */
+    unsigned opcode: 4; /* purpose of message */
+    unsigned qr: 1;     /* response flag */
+    unsigned rcode: 4;  /* response code */
+    unsigned cd: 1;     /* checking disabled by resolver */
+    unsigned ad: 1;     /* authentic data from named */
+    unsigned z: 1;      /* unused bits, must be ZERO */
+    unsigned ra: 1;     /* recursion available */
+    /* 上面的声明似乎维持了小端序，非常妙*/
     uint16_t QDcount;  // Number of entries in the question section
     uint16_t ANcount;  // Number of RRs in the answer section
     uint16_t NScount;  // Number of name server RRs in authority records section

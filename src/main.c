@@ -102,13 +102,13 @@ void DNS_process(char* buf, int len) {
 
     DNS DNSresp;
     DNSHeader dnsrespHeader = dns.header;
-    dnsrespHeader.info |= (0x8000);
+    dnsrespHeader.rd = 1;
     DNSresp.header = dnsrespHeader;
     DNSresp.question = (Qsection*)malloc(dns.header.QDcount * sizeof(Qsection));
     DNSresp.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
     DNSresp.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
     DNSresp.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
-    if((dns.header.info >> 15) == 1)//if it receives from client
+    if(dns.header.qr == 1)//if it receives from client
     {
         for (int i = 0; i < dns.header.QDcount; i++) {
             char url[128];
@@ -121,7 +121,7 @@ void DNS_process(char* buf, int len) {
                     uint16_t data[2];
                     uint8_t found = 0;
                     uint32_t ip = findIP(url, &found);
-                    if (ip == 0) dnsrespHeader.info |= 3;
+                    if (ip == 0) dnsrespHeader.rcode = 3;
                     //if (!found) connectCloudDNS();
                     memcpy(data, &ip, sizeof data);
                     dns.answer[i].Rdata = data;
