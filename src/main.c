@@ -135,7 +135,7 @@ void DNS_process(char* buf, int len) {
             // TODO: should wrap, not epoll.
             DNSresp.answer[i].name = dns.question[i].Qname;
             DNSresp.answer[i].type = dns.question[i].Qtype;
-            DNSresp.answer[i].class = 1;  // for Internet. Fixed.
+            DNSresp.answer[i].clas = 1;  // for Internet. Fixed.
             DNSresp.answer[i].TTL = 2;    // I guess
         }
         memcpy(buf, &DNSresp, sizeof DNSresp);

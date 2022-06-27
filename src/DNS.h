@@ -63,7 +63,7 @@ typedef struct Qsection {
 typedef struct RRformat {
     char* name;  //例如一个域名，RDATA是一个IP地址,the same as Qsection.Qname
     uint16_t type;   //数据类型
-    uint16_t class;
+    uint16_t clas;
     uint32_t TTL;
     uint16_t RDlength;  //数据长度
     uint32_t* Rdata;    //实际数据"该数据的格式依赖于类型字段的值。对于类型 1（A记录）资源数据是4字节的IP地址。"
