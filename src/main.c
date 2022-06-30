@@ -86,34 +86,28 @@ void DNS_process(char* buf, int len) {
     // RRformat rr_add[dnsHeader.ARcount];
     DNS dns;
     size_t bias;
-    readHeader(buf, &dns.header);
-    dns.question = (Qsection*)malloc(dns.header.QDcount * sizeof(Qsection));
-    bias = readQuestions(buf, dns.question, dns.header.QDcount);
-    dns.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
-    bias = readRRs(buf, dns.answer, dns.header.ANcount, bias);
-    dns.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
-    bias = readRRs(buf, dns.authority, dns.header.NScount, bias);
-    dns.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
-    bias = readRRs(buf, dns.additional, dns.header.ARcount, bias);
+    dns.header = (DNSHeader *)buf;
+    dns.question = (Qsection*)malloc(dns.header->QDcount * sizeof(Qsection));
+    bias = readQuestions(buf, dns.question, dns.header->QDcount);
+    dns.answer = (RRformat*)malloc(dns.header->ANcount * sizeof(RRformat));
+    bias = readRRs(buf, dns.answer, dns.header->ANcount, bias);
+    dns.authority = (RRformat*)malloc(dns.header->NScount * sizeof(RRformat));
+    bias = readRRs(buf, dns.authority, dns.header->NScount, bias);
+    dns.additional = (RRformat*)malloc(dns.header->ARcount * sizeof(RRformat));
+    bias = readRRs(buf, dns.additional, dns.header->ARcount, bias);
     printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
 
-    DNS DNSresp;
-    DNSHeader dnsrespHeader = dns.header;
-    dnsrespHeader.rd = 1;
-    DNSresp.header = dnsrespHeader;
-    DNSresp.question = (Qsection*)malloc(dns.header.QDcount * sizeof(Qsection));
-    DNSresp.answer = (RRformat*)malloc(dns.header.ANcount * sizeof(RRformat));
-    DNSresp.authority = (RRformat*)malloc(dns.header.NScount * sizeof(RRformat));
-    DNSresp.additional = (RRformat*)malloc(dns.header.ARcount * sizeof(RRformat));
-    if(dns.header.qr == 1)//if it receives from client
+    if(dns.header->qr == 0)//if it receives from client
     {
-        for (int i = 0; i < dns.header.QDcount; i++) {
+        for (int i = 0; i < dns.header->QDcount; i++) {
             char url[128];
             getURL(dns.question[i].Qname, url);  //(BUG)
             switch (dns.question[i].Qtype) {     // todo
+                case 0:
+                    //todo
                 case 2:
                     // fallthrough
                 case 1:
@@ -121,7 +115,7 @@ void DNS_process(char* buf, int len) {
                     uint16_t data[2];
                     uint8_t found = 0;
                     uint32_t ip = findIP(url, &found);
-                    if (ip == 0) dnsrespHeader.rcode = 3;
+                    if (ip == 0) dns.header->rcode = 3;
                     //if (!found) connectCloudDNS();
                     memcpy(data, &ip, sizeof data);
                     dns.answer[i].Rdata = data;
@@ -133,12 +127,7 @@ void DNS_process(char* buf, int len) {
                     break;
             }
             // TODO: should wrap, not epoll.
-            DNSresp.answer[i].name = dns.question[i].Qname;
-            DNSresp.answer[i].type = dns.question[i].Qtype;
-            DNSresp.answer[i].clas = 1;  // for Internet. Fixed.
-            DNSresp.answer[i].TTL = 2;    // I guess
         }
-        memcpy(buf, &DNSresp, sizeof DNSresp);
     }
     else//it receives from server
     {

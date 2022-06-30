@@ -71,7 +71,7 @@ typedef struct RRformat {
 
 // DNS 报文.后三段格式相同，每段都是由0~n个资源记录(Resource Record)构成
 typedef struct DNS {
-    DNSHeader header;
+    DNSHeader * header;
     Qsection* question;    // the question for the name server
     RRformat* answer;      // RRs answering the question
     RRformat* authority;   // RRs pointing toward an authority

@@ -56,15 +56,6 @@ uint32_t getURL(char *name, char *res) {
   return idx;
 }
 
-void readHeader(char *buf, DNSHeader *header) {
-  header->ID = (uint16_t)(buf[0] << 8) + buf[1];
-  header->info = (uint16_t)(buf[2] << 8) + buf[3];
-  header->QDcount = (uint16_t)(buf[4] << 8) + buf[5];
-  header->ANcount = (uint16_t)(buf[6] << 8) + buf[7];
-  header->NScount = (uint16_t)(buf[8] << 8) + buf[9];
-  header->ARcount = (uint16_t)(buf[10] << 8) + buf[11];
-}
-
 /**
  * @brief input questions
  *
