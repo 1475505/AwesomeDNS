@@ -43,10 +43,10 @@ int main(int argc, char* argv[]) {
     struct sockaddr_in servaddr, cliaddr;
     socklen_t cliaddr_len;
     int sockfd;
-    char buf[MAXLINE];
+char buf[MAXLINE];
     char str[INET_ADDRSTRLEN];
     int i, n;
-
+    printf("Current configFile: %s\n", configFile);
     initTrie();
     FILE * fp;
     if(fp = fopen("dnsrelay.txt", "r"))
@@ -113,12 +113,12 @@ void DNS_process(char* buf, int len) {
     DNS dns;
     size_t bias;
     dns.header = (DNSHeader *)buf;
-    log(2, "get DNS header: QDcount %d", dns.header->QDcount);
     dns.header->QDcount = ntohs(dns.header->QDcount);
     dns.header->ANcount = ntohs(dns.header->ANcount);
     dns.header->ARcount = ntohs(dns.header->ARcount);
     dns.header->NScount = ntohs(dns.header->NScount);
-    log(2, "get DNS header: QDcount %d", dns.header->QDcount);
+    log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n"\
+    , dns.header->QDcount, dns.header->ANcount, dns.header->NScount, dns.header->ARcount);
     dns.question = (Qsection*)malloc(dns.header->QDcount * sizeof(Qsection));
     bias = readQuestions(buf, dns.question, dns.header->QDcount);
     dns.answer = (RRformat*)malloc(dns.header->ANcount * sizeof(RRformat));

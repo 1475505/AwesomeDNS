@@ -37,16 +37,16 @@ uint32_t ip2hex(char *ip) {
 uint32_t getURL(char *name, char *res, size_t * offset) {
   assert(name);
   assert(res);
-  log(2, "getting URL: %s\n", name);
+  log(2, "getting URL for %s:", name);
   int len = strlen(name);
   (*offset) += len + 1;
   int idx = 0;
   int bias = name[0];
   int i = 1;
   while (i < len) {
+    assert(bias < 100);
     for (int j = 0; j < bias; j++) {
-      if (name[i] != 0)
-        res[idx] = name[i];
+      res[idx] = name[i];
       idx++;
       i++;
     }
@@ -58,6 +58,7 @@ uint32_t getURL(char *name, char *res, size_t * offset) {
     idx++;
   }
   res[idx] = '\0';
+  printf("(%s}", res);
   return idx;
 }
 
@@ -74,6 +75,7 @@ size_t readQuestions(char *buf, Qsection *questions, uint16_t QDcount) {
   for (i = 0; i <= QDcount; i++) {
     questions[i].Qname = (char *)malloc((strlen(buf + bias)) * sizeof(char));
     getURL(buf + bias, questions[i].Qname, &bias);
+    log(1, "%s \n", questions[i].Qname);
     questions[i].Qtype = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
     questions[i].Qtype = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
     bias += 4;
