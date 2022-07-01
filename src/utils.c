@@ -103,9 +103,15 @@ char *getName(char *name, char *buf, size_t *bias) {
   size_t size = buf[(*bias)++], all = 0;
   name = NULL;
 
-  while (size) {
+  while (size > 0) {
     all += size;
     char *new = malloc(all * sizeof(char));
+    if (new){
+      log(2, "get name %s\n", name);
+    } else {
+      printf("error to malloc of size %d\n", all);
+      break;
+    }
     memset(new, 0, all);
     if (name != NULL) {
       int j;
@@ -114,6 +120,7 @@ char *getName(char *name, char *buf, size_t *bias) {
       }
       free(name);
     }
+    printf("current size: %d", size);
     memcpy(new + strlen(new), buf + (*bias), size);
     (*bias) += size;
     name = new;
