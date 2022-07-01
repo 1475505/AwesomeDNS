@@ -14,7 +14,7 @@
 2[-dd] - 调试信息级别2(输出冗长的调试信息)
 */
 
-uint8_t debug_info = 0;
+uint8_t debug_info = 2;
 char serverName[16] = "202.106.0.20";//default
 char configFile[64] = "../dnsrelay.txt";//default
 
