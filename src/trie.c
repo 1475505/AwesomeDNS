@@ -1,4 +1,5 @@
 #include "trie.h"
+char ALPHABET[37] = "abcdefghijklmnopqrstuvwxyz0123456789-";
 
 //Initialize trie tree
 void initTrie()

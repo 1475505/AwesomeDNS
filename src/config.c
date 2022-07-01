@@ -68,7 +68,7 @@ uint32_t findIP(char* name, uint8_t* found){
     else res = searchCache(name, &ip, &ttl);
     if(res) log(1, "\n %s hit the cache!\n", name);
     //todo: what if not found?
-    log(1, "\n %s not found in configFIle, connecting to %s\n", name, serverName);
+    else log(1, "\n %s not found in configFIle, connecting to %s\n", name, serverName);
     return 0;
 }
 

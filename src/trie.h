@@ -7,8 +7,6 @@
 #include <time.h>
 #include <stdint.h>
 
-char ALPHABET[37] = "abcdefghijklmnopqrstuvwxyz0123456789-";
-
 typedef struct Detail
 {
     uint32_t ip;

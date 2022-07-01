@@ -111,20 +111,20 @@ void DNS_process(char* buf, int len) {
     DNS dns;
     size_t bias;
     dns.header = (DNSHeader *)buf;
-    dns.header->QDcount = ntohs(dns.header->QDcount);
-    dns.header->ANcount = ntohs(dns.header->ANcount);
-    dns.header->ARcount = ntohs(dns.header->ARcount);
-    dns.header->NScount = ntohs(dns.header->NScount);
+    dns.header->QDcount = dns.header->QDcount;
+    dns.header->ANcount = dns.header->ANcount;
+    dns.header->ARcount = dns.header->ARcount;
+    dns.header->NScount = dns.header->NScount;
     log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n"\
-    , dns.header->QDcount, dns.header->ANcount, dns.header->NScount, dns.header->ARcount);
-    dns.question = (Qsection*)malloc(dns.header->QDcount * sizeof(Qsection));
-    bias = readQuestions(buf, dns.question, dns.header->QDcount);
-    dns.answer = (RRformat*)malloc(dns.header->ANcount * sizeof(RRformat));
-    bias = readRRs(buf, dns.answer, dns.header->ANcount, bias);
-    dns.authority = (RRformat*)malloc(dns.header->NScount * sizeof(RRformat));
-    bias = readRRs(buf, dns.authority, dns.header->NScount, bias);
-    dns.additional = (RRformat*)malloc(dns.header->ARcount * sizeof(RRformat));
-    bias = readRRs(buf, dns.additional, dns.header->ARcount, bias);
+    , ntohs(dns.header->QDcount), ntohs(dns.header->ANcount), ntohs(dns.header->NScount), ntohs(dns.header->ARcount));
+    dns.question = (Qsection*)malloc(ntohs(dns.header->QDcount) * sizeof(Qsection));
+    bias = readQuestions(buf, dns.question, ntohs(dns.header->QDcount));
+    dns.answer = (RRformat*)malloc(ntohs(dns.header->ANcount) * sizeof(RRformat));
+    bias = readRRs(buf, dns.answer, ntohs(dns.header->ANcount), bias);
+    dns.authority = (RRformat*)malloc(ntohs(dns.header->NScount) * sizeof(RRformat));
+    bias = readRRs(buf, dns.authority, ntohs(dns.header->NScount), bias);
+    dns.additional = (RRformat*)malloc(ntohs(dns.header->ARcount) * sizeof(RRformat));
+    bias = readRRs(buf, dns.additional, ntohs(dns.header->ARcount), bias);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
@@ -167,8 +167,19 @@ void DNS_process(char* buf, int len) {
     }
     else//it receives from server
     {
-
-        //todo
+        if(dns.header->opcode == 0)
+        {
+            int i;
+            for(i = 0; i < ntohs(dns.header->ANcount); i++)
+            {
+                if(ntohs(dns.answer[i].type) == 1)
+                {
+                    addCache(dns.question[i].Qname, ntohl(dns.answer[i].Rdata[i]), ntohl(dns.answer[i].TTL));
+                }
+            }
+            
+        }
+        //not finished yet
     }
     memcpy(buf, &dns, sizeof dns);
 }
