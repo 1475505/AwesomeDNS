@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "DNS.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -35,6 +36,8 @@ uint32_t ip2hex(char *ip) {
    */
 uint32_t getURL(char *name, char *res, size_t * offset) {
   assert(name);
+  assert(res);
+  log(2, "getting URL: %s\n", name);
   int len = strlen(name);
   (*offset) += len + 1;
   int idx = 0;
@@ -42,7 +45,8 @@ uint32_t getURL(char *name, char *res, size_t * offset) {
   int i = 1;
   while (i < len) {
     for (int j = 0; j < bias; j++) {
-      res[idx] = name[i];
+      if (name[i] != 0)
+        res[idx] = name[i];
       idx++;
       i++;
     }
@@ -67,8 +71,8 @@ uint32_t getURL(char *name, char *res, size_t * offset) {
  */
 size_t readQuestions(char *buf, Qsection *questions, uint16_t QDcount) {
   size_t i, bias = 12;
-  for (i = 0; i < QDcount; i++) {
-    questions->Qname = (char *)malloc((strlen(buf + bias) - 1) * sizeof(char));
+  for (i = 0; i <= QDcount; i++) {
+    questions[i].Qname = (char *)malloc((strlen(buf + bias)) * sizeof(char));
     getURL(buf + bias, questions[i].Qname, &bias);
     questions[i].Qtype = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
     questions[i].Qtype = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];

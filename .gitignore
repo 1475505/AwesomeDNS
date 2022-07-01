@@ -36,3 +36,5 @@ gdb
 *.exe
 *.out
 *.app
+src/dnsrelay.txt
+output/main

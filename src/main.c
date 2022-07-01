@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
 
         log(2, "%s\n", buf);
 
+        
         DNS_process(buf, n);  // You can use _test to test connection.
 
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
@@ -112,6 +113,12 @@ void DNS_process(char* buf, int len) {
     DNS dns;
     size_t bias;
     dns.header = (DNSHeader *)buf;
+    log(2, "get DNS header: QDcount %d", dns.header->QDcount);
+    dns.header->QDcount = ntohs(dns.header->QDcount);
+    dns.header->ANcount = ntohs(dns.header->ANcount);
+    dns.header->ARcount = ntohs(dns.header->ARcount);
+    dns.header->NScount = ntohs(dns.header->NScount);
+    log(2, "get DNS header: QDcount %d", dns.header->QDcount);
     dns.question = (Qsection*)malloc(dns.header->QDcount * sizeof(Qsection));
     bias = readQuestions(buf, dns.question, dns.header->QDcount);
     dns.answer = (RRformat*)malloc(dns.header->ANcount * sizeof(RRformat));
@@ -120,7 +127,6 @@ void DNS_process(char* buf, int len) {
     bias = readRRs(buf, dns.authority, dns.header->NScount, bias);
     dns.additional = (RRformat*)malloc(dns.header->ARcount * sizeof(RRformat));
     bias = readRRs(buf, dns.additional, dns.header->ARcount, bias);
-    printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif

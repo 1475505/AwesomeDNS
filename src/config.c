@@ -1,5 +1,6 @@
 #include "config.h"
 #include "Socket.h"
+#include <assert.h>
 #include <bits/getopt_core.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -57,6 +58,9 @@ void config(int argc, char* argv[]){
 /* url has been dotted by called `getURL`. now Search the file to get ip */
 uint32_t findIP(char* name, uint8_t* found){
     FILE* fp = fopen(configFile, "r");
+    if (!fp){
+        perr_exit("Config File Not Found!");
+    }
     char ip[16];
     char url[64];
     while (fscanf(fp, "%s %s", ip, url) != EOF){
