@@ -44,7 +44,6 @@ uint32_t getURL(char *name, char *res, size_t * offset) {
   int bias = name[0];
   int i = 1;
   while (i < len) {
-    assert(bias < 100);
     for (int j = 0; j < bias; j++) {
       res[idx] = name[i];
       idx++;

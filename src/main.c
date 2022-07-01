@@ -90,7 +90,7 @@ char buf[MAXLINE];
 
         
         DNS_process(buf, n);  // You can use _test to test connection.
-
+        
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
                    sizeof(cliaddr));
 
@@ -130,12 +130,10 @@ void DNS_process(char* buf, int len) {
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
-
     if(dns.header->qr == 0)//if it receives from client
     {
         for (int i = 0; i < dns.header->QDcount; i++) {
             char url[128];
-            size_t offset;
             switch (dns.question[i].Qtype) {     // todo
                 case 0:
                     //todo
@@ -165,6 +163,7 @@ void DNS_process(char* buf, int len) {
     {
         //todo
     }
+    memcpy(buf, &dns, sizeof dns);
 }
 
 void DNS_process_test(char* buf, int len) {
