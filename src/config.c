@@ -67,12 +67,13 @@ uint32_t findIP(char* name, uint8_t* found){
     while (fscanf(fp, "%s %s", ip, url) != EOF){
         if (strcmp(name, url) == 0){
             found = 1;
+            log(0, "match url %s to ip %s", name, ip);
             return inet_pton(ip);
         }
     }
     //todo: what if not found?
     log(1, "\n %s not found in configFIle, connecting to %s\n", name, serverName);
-    return 12345;
+    return 0;
 }
 
 void connectCloudDNS(){// connect to cloud DNS code outline. TODO
