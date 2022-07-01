@@ -129,10 +129,12 @@ void DNS_process(char* buf, int len) {
     {
         for (int i = 0; i < dns.header->QDcount; i++) {
             char url[128];
-            getURL(dns.question[i].Qname, url);  //(BUG)
+            size_t offset;
+            getURL(dns.question[i].Qname, url, &offset);  //(BUG)
             switch (dns.question[i].Qtype) {     // todo
                 case 0:
                     //todo
+                    break;
                 case 2:
                     // fallthrough
                 case 1:

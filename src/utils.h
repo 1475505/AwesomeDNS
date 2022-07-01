@@ -13,7 +13,7 @@ if (debug_info >= x) { \
 #include "DNS.h"
 
 uint32_t ip2hex(char* ip);
-uint32_t getURL(char* name, char*);
+uint32_t getURL(char* name, char* res, size_t * offset);
 void handleBuf(char * buf);
 void readHeader(char * buf, DNSHeader * header);
 size_t readQuestions(char * buf, Qsection * questions, uint16_t QDcount);
