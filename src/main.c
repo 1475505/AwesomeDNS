@@ -43,10 +43,10 @@ int main(int argc, char* argv[]) {
     struct sockaddr_in servaddr, cliaddr;
     socklen_t cliaddr_len;
     int sockfd;
-    char buf[MAXLINE];
+char buf[MAXLINE];
     char str[INET_ADDRSTRLEN];
     int i, n;
-
+    printf("Current configFile: %s\n", configFile);
     initTrie();
     FILE * fp;
     if(fp = fopen("dnsrelay.txt", "r"))
@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
 
         log(2, "%s\n", buf);
 
+        
         DNS_process(buf, n);  // You can use _test to test connection.
 
         n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
@@ -112,6 +113,12 @@ void DNS_process(char* buf, int len) {
     DNS dns;
     size_t bias;
     dns.header = (DNSHeader *)buf;
+    dns.header->QDcount = ntohs(dns.header->QDcount);
+    dns.header->ANcount = ntohs(dns.header->ANcount);
+    dns.header->ARcount = ntohs(dns.header->ARcount);
+    dns.header->NScount = ntohs(dns.header->NScount);
+    log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n"\
+    , dns.header->QDcount, dns.header->ANcount, dns.header->NScount, dns.header->ARcount);
     dns.question = (Qsection*)malloc(dns.header->QDcount * sizeof(Qsection));
     bias = readQuestions(buf, dns.question, dns.header->QDcount);
     dns.answer = (RRformat*)malloc(dns.header->ANcount * sizeof(RRformat));
@@ -120,46 +127,45 @@ void DNS_process(char* buf, int len) {
     bias = readRRs(buf, dns.authority, dns.header->NScount, bias);
     dns.additional = (RRformat*)malloc(dns.header->ARcount * sizeof(RRformat));
     bias = readRRs(buf, dns.additional, dns.header->ARcount, bias);
-    printf("%s\n", dns.question[0].Qname);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
 
-    if(dns.header->qr == 0)//if it receives from client
-    {
-        for (int i = 0; i < dns.header->QDcount; i++) {
-            char url[128];
-            size_t offset;
-            getURL(dns.question[i].Qname, url, &offset);  //(BUG)
-            switch (dns.question[i].Qtype) {     // todo
-                case 0:
-                    //todo
-                    break;
-                case 2:
-                    // fallthrough
-                case 1:
-                    dns.answer[i].RDlength = 4;
-                    uint16_t data[2];
-                    uint8_t found = 0;
-                    uint32_t ip = findIP(url, &found);
-                    if (ip == 0) dns.header->rcode = 3;
-                    //if (!found) connectCloudDNS();
-                    memcpy(data, &ip, sizeof data);
-                    dns.answer[i].Rdata = data;
-                    break;
-                case 5:
-                    dns.answer[i].Rdata = url;  // todo: should return 别名
-                    break;
-                default:
-                    break;
-            }
-            // TODO: should wrap, not epoll.
-        }
-    }
-    else//it receives from server
-    {
-        //todo
-    }
+    // if(dns.header->qr == 0)//if it receives from client
+    // {
+    //     for (int i = 0; i < dns.header->QDcount; i++) {
+    //         char url[128];
+    //         size_t offset;
+    //         getURL(dns.question[i].Qname, url, &offset);  //(BUG)
+    //         switch (dns.question[i].Qtype) {     // todo
+    //             case 0:
+    //                 //todo
+    //                 break;
+    //             case 2:
+    //                 // fallthrough
+    //             case 1:
+    //                 dns.answer[i].RDlength = 4;
+    //                 uint16_t data[2];
+    //                 uint8_t found = 0;
+    //                 uint32_t ip = findIP(url, &found);
+    //                 if (ip == 0) dns.header->rcode = 3;
+    //                 //if (!found) connectCloudDNS();
+    //                 memcpy(data, &ip, sizeof data);
+    //                 dns.answer[i].Rdata = data;
+    //                 break;
+    //             case 5:
+    //                 dns.answer[i].Rdata = url;  // todo: should return 别名
+    //                 break;
+    //             default:
+    //                 break;
+    //         }
+    //         // TODO: should wrap, not epoll.
+    //     }
+    // }
+    // else//it receives from server
+    // {
+    //     //todo
+    // }
 }
 
 void DNS_process_test(char* buf, int len) {

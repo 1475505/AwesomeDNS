@@ -41,6 +41,7 @@ int getIndex(char c)
 {
     if(c >= 'a' && c <= 'z') return c - 'a' + 1;
     else if(c >= '0' && c <= '9') return c - '0' + 27;
+    else if(c >= 'A' && c <= 'Z') return c - 'A' + 1;
     return 37;
 }
 

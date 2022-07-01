@@ -1,7 +1,11 @@
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
+uint16_t test(uint16_t test){
+    return ntohs(test);
+}
 uint32_t ip2hex(char* ip) {
     uint32_t ans = 0;
     uint8_t bias = 24;
@@ -49,6 +53,8 @@ int main(){
     char ip[16] = "60700773xyz000";
     char str[16];
     getIP(ip, str);
-    printf("%s\n", str);
+    // printf("%s\n", str);
+    uint16_t t = 256;
+    printf("%d", test(t));
     return 0;
 }

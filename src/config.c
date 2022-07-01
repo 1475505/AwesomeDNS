@@ -1,5 +1,7 @@
 #include "config.h"
 #include "Socket.h"
+#include "utils.h"
+#include <assert.h>
 #include <bits/getopt_core.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -16,7 +18,7 @@
 
 uint8_t debug_info = 2;
 char serverName[16] = "202.106.0.20";//default
-char configFile[64] = "../dnsrelay.txt";//default
+char configFile[64] = "dnsrelay.txt";//default
 
 int dotCount(char* ip){
     int len = strlen(ip);
@@ -57,8 +59,11 @@ void config(int argc, char* argv[]){
 /* url has been dotted by called `getURL`. now Search the file to get ip */
 uint32_t findIP(char* name, uint8_t* found){
     FILE* fp = fopen(configFile, "r");
+    if (!fp){
+        perr_exit("Config File %s Not Found\n!");
+    }
     char ip[16];
-    char url[64];
+    char url[128];
     while (fscanf(fp, "%s %s", ip, url) != EOF){
         if (strcmp(name, url) == 0){
             found = 1;
@@ -66,7 +71,8 @@ uint32_t findIP(char* name, uint8_t* found){
         }
     }
     //todo: what if not found?
-    return 0;
+    log(1, "\n %s not found in configFIle, connecting to %s\n", name, serverName);
+    return 12345;
 }
 
 void connectCloudDNS(){// connect to cloud DNS code outline. TODO
