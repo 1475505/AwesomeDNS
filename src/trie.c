@@ -18,14 +18,14 @@ void insertTrie(char * domain, uint32_t ip, uint32_t ttl)
         if(t->children[index] == NULL)
         {
             t->children[index] = (Trie *)malloc(sizeof(Trie));
-            memset(t->children, 0, sizeof(t->children));
+            memset(t->children[index], 0, sizeof(Trie));
         }
         t = t->children[index];
     }
     if(t->children[0] == NULL)
     {
         t->children[0] = (Trie *)malloc(sizeof(Trie));
-        memset(t->children, 0, sizeof(t->children));
+        memset(t->children[0], 0, sizeof(Trie));
     }
     t = t->children[0];
     if(t->leaf == NULL)

@@ -28,7 +28,7 @@ typedef struct Trie
 
 Trie * trie;
 void initTrie();
-void insertTrie(char * domain, int32_t ip, int32_t ttl);
+void insertTrie(char * domain, uint32_t ip, uint32_t ttl);
 int getIndex(char c);
 bool searchTrie(char * domain, u_int32_t * ip, u_int32_t * ttl);
 void freeTrie();

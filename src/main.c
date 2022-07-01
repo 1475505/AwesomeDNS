@@ -19,6 +19,7 @@
 #include "config.h"
 #include "DNS.h"
 #include "utils.h"
+#include <errno.h>
 
 #define MAXLINE 512
 #define SERV_PORT 53
@@ -48,16 +49,23 @@ int main(int argc, char* argv[]) {
 
     initTrie();
     FILE * fp;
-    if(fp = fopen("../dnsrelay.txt", "r"))
+    if(fp = fopen("dnsrelay.txt", "r"))
     {
         char ipstr[15], name[256];
-        while (fscanf(fp, "%s %s", ipstr, name) != 0)
+        while (fscanf(fp, "%s %s", ipstr, name) != EOF)
         {
             uint32_t ip = inet_addr(ipstr);
             insertTrie(name, ntohl(ip), 255);
             /* code */
+            memset(ipstr, 0, 15);
+            memset(name, 0, 256);
         }
     }
+    else
+    {
+        printf("open fail errno = %d reason = %s \n", errno, strerror(errno));
+    }
+    fclose(fp);
 
     sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
 
