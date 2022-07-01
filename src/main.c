@@ -29,9 +29,6 @@ extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
 
-extern void initTrie();
-extern void insertTrie(char * domain, int32_t ip, int32_t ttl);
-
 void DNS_process(char* buf, int len);
 void DNS_process_test(char* buf, int len);
 
@@ -48,6 +45,7 @@ char buf[MAXLINE];
     int i, n;
     printf("Current configFile: %s\n", configFile);
     initTrie();
+    initCache();
     FILE * fp;
     if(fp = fopen(configFile, "r"))
     {
@@ -132,35 +130,44 @@ void DNS_process(char* buf, int len) {
 #endif
     if(dns.header->qr == 0)//if it receives from client
     {
-        for (int i = 0; i < dns.header->QDcount; i++) {
-            char url[128];
-            switch (dns.question[i].Qtype) {     // todo
-                case 0:
-                    //todo
-                    break;
-                case 2:
-                    // fallthrough
-                case 1:
-                    dns.answer[i].RDlength = 4;
-                    uint16_t data[2];
-                    uint8_t found = 0;
-                    uint32_t ip = findIP(dns.question[i].Qname, &found);
-                    if (ip == 0) dns.header->rcode = 3;
-                    //if (!found) connectCloudDNS();
-                    memcpy(data, &ip, sizeof data);
-                    dns.answer[i].Rdata = data;
-                    break;
-                case 5:
-                    dns.answer[i].Rdata = url;  // todo: should return 别名
-                    break;
-                default:
-                    break;
+        if(dns.header->opcode == 0)
+        {
+            for (int i = 0; i < ntohs(dns.header->QDcount); i++) {
+                char url[128];
+                switch (dns.question[i].Qtype) {     // todo
+                    case 2:
+                        // fallthrough
+                    case 1://ipv4
+                        dns.answer[i].RDlength = htons(4);
+                        uint16_t data[2];
+                        uint8_t found = 0;
+                        uint32_t ip = findIP(dns.question[i].Qname, &found);
+                        if (ip == 0) dns.header->rcode = 3;
+                        else
+                        {
+                            dns.header->rcode = 0;
+                            dns.header->ANcount = htons(1);
+                        }
+                        //if (!found) connectCloudDNS();
+                        memcpy(data, &ip, sizeof data);
+                        dns.answer[i].Rdata = data;
+                        break;
+                    case 28://ipv6
+                        break;
+                    case 5:
+                        dns.answer[i].Rdata = url;  // todo: should return 别名
+                        break;
+                    default:
+                        break;
+                }
             }
+        
             // TODO: should wrap, not epoll.
         }
     }
     else//it receives from server
     {
+
         //todo
     }
     memcpy(buf, &dns, sizeof dns);

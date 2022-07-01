@@ -13,5 +13,8 @@ static int list_size;
 static int CACHE_SIZE = 256;
 
 void initCache();
+void addCache(char * name, uint32_t ip, uint32_t ttl);
+bool searchCache(char * name, uint32_t * ip, uint32_t * ttl);
+void printCache();
 
 #endif

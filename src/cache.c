@@ -68,6 +68,6 @@ void printCache()
     list_for_each(pos, &list)
     {
         struct listNode * ln = list_entry(pos, struct listNode, list);
-        log(1, "name:%s\nip:%x\n", ln->name, ln->ip);
+        log(2, "name:%s\nip:%x\n", ln->name, ln->ip);
     }
 }

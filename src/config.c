@@ -62,15 +62,11 @@ uint32_t findIP(char* name, uint8_t* found){
     if (!fp){
         perr_exit("Config File %s Not Found\n!");
     }
-    char ip[16];
-    char url[128];
-    while (fscanf(fp, "%s %s", ip, url) != EOF){
-        if (strcmp(name, url) == 0){
-            found = 1;
-            log(0, "match url %s to ip %s", name, ip);
-            return inet_pton(ip);
-        }
-    }
+    uint32_t ip, ttl;
+    bool res = searchTrie(name, &ip, &ttl);
+    if(res) log(1, "\n %s hit the trie tree in configFile!\n", name);
+    else res = searchCache(name, &ip, &ttl);
+    if(res) log(1, "\n %s hit the cache!\n", name);
     //todo: what if not found?
     log(1, "\n %s not found in configFIle, connecting to %s\n", name, serverName);
     return 0;
