@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include "Socket.h"
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <assert.h>
 #include "config.h"
 #include "DNS.h"
@@ -26,6 +27,9 @@
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
+
+extern void initTrie();
+extern void insertTrie(char * domain, int32_t ip, int32_t ttl);
 
 void DNS_process(char* buf, int len);
 void DNS_process_test(char* buf, int len);
@@ -41,6 +45,19 @@ int main(int argc, char* argv[]) {
     char buf[MAXLINE];
     char str[INET_ADDRSTRLEN];
     int i, n;
+
+    initTrie();
+    FILE * fp;
+    if(fp = fopen("../dnsrelay.txt", "r"))
+    {
+        char ipstr[15], name[256];
+        while (fscanf(fp, "%s %s", ipstr, name) != 0)
+        {
+            uint32_t ip = inet_addr(ipstr);
+            insertTrie(name, ntohl(ip), 255);
+            /* code */
+        }
+    }
 
     sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
 
