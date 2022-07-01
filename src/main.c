@@ -131,41 +131,41 @@ void DNS_process(char* buf, int len) {
     assert(sizeof(dns) >= 12);
 #endif
 
-    if(dns.header->qr == 0)//if it receives from client
-    {
-        for (int i = 0; i < dns.header->QDcount; i++) {
-            char url[128];
-            size_t offset;
-            getURL(dns.question[i].Qname, url, &offset);  //(BUG)
-            switch (dns.question[i].Qtype) {     // todo
-                case 0:
-                    //todo
-                    break;
-                case 2:
-                    // fallthrough
-                case 1:
-                    dns.answer[i].RDlength = 4;
-                    uint16_t data[2];
-                    uint8_t found = 0;
-                    uint32_t ip = findIP(url, &found);
-                    if (ip == 0) dns.header->rcode = 3;
-                    //if (!found) connectCloudDNS();
-                    memcpy(data, &ip, sizeof data);
-                    dns.answer[i].Rdata = data;
-                    break;
-                case 5:
-                    dns.answer[i].Rdata = url;  // todo: should return 别名
-                    break;
-                default:
-                    break;
-            }
-            // TODO: should wrap, not epoll.
-        }
-    }
-    else//it receives from server
-    {
-        //todo
-    }
+    // if(dns.header->qr == 0)//if it receives from client
+    // {
+    //     for (int i = 0; i < dns.header->QDcount; i++) {
+    //         char url[128];
+    //         size_t offset;
+    //         getURL(dns.question[i].Qname, url, &offset);  //(BUG)
+    //         switch (dns.question[i].Qtype) {     // todo
+    //             case 0:
+    //                 //todo
+    //                 break;
+    //             case 2:
+    //                 // fallthrough
+    //             case 1:
+    //                 dns.answer[i].RDlength = 4;
+    //                 uint16_t data[2];
+    //                 uint8_t found = 0;
+    //                 uint32_t ip = findIP(url, &found);
+    //                 if (ip == 0) dns.header->rcode = 3;
+    //                 //if (!found) connectCloudDNS();
+    //                 memcpy(data, &ip, sizeof data);
+    //                 dns.answer[i].Rdata = data;
+    //                 break;
+    //             case 5:
+    //                 dns.answer[i].Rdata = url;  // todo: should return 别名
+    //                 break;
+    //             default:
+    //                 break;
+    //         }
+    //         // TODO: should wrap, not epoll.
+    //     }
+    // }
+    // else//it receives from server
+    // {
+    //     //todo
+    // }
 }
 
 void DNS_process_test(char* buf, int len) {

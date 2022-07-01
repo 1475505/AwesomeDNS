@@ -58,7 +58,6 @@ uint32_t getURL(char *name, char *res, size_t * offset) {
     idx++;
   }
   res[idx] = '\0';
-  printf("(%s}", res);
   return idx;
 }
 
@@ -72,7 +71,7 @@ uint32_t getURL(char *name, char *res, size_t * offset) {
  */
 size_t readQuestions(char *buf, Qsection *questions, uint16_t QDcount) {
   size_t i, bias = 12;
-  for (i = 0; i <= QDcount; i++) {
+  for (i = 0; i < QDcount; i++) {
     questions[i].Qname = (char *)malloc((strlen(buf + bias)) * sizeof(char));
     getURL(buf + bias, questions[i].Qname, &bias);
     log(1, "%s \n", questions[i].Qname);
@@ -86,7 +85,7 @@ size_t readQuestions(char *buf, Qsection *questions, uint16_t QDcount) {
 size_t readRRs(char *buf, RRformat *RRs, uint16_t RRcount, size_t bias) {
   size_t i;
   for (i = 0; i < RRcount; i++) {
-    RRs[i].name = (char *)malloc((strlen(buf + bias) - 1) * sizeof(char));
+    RRs[i].name = (char *)malloc((strlen(buf + bias)) * sizeof(char));
     getURL(buf + bias, RRs[i].name, &bias);
     RRs[i].type = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
     RRs[i].clas = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
