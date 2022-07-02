@@ -6,6 +6,7 @@
 - 表中未检到该域名，则向因特网DNS服务器发出查询，并将结果返给客户端（中继功能）
      考虑多个计算机上的客户端会同时查询，需要进行消息ID的转换
 */
+#include "connect.h"
 #define DEBUG
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +36,7 @@ void DNS_process_test(char* buf, int len);
 int main(int argc, char* argv[]) {
     config(argc, argv);
 #ifdef DEBUG
-    debug_info = 2;
+    debug_info = 3;
 #endif
     struct sockaddr_in servaddr, cliaddr;
     socklen_t cliaddr_len;
@@ -148,7 +149,9 @@ void DNS_process(char* buf, int len) {
                             dns.header->rcode = 0;
                             dns.header->ANcount = htons(1);
                         }
-                        //if (!found) connectCloudDNS();
+                        if (!found) {
+                            dns.header->ID = connectCloudDNS(dns);
+                        }
                         memcpy(data, &ip, sizeof data);
                         dns.answer[i].Rdata = data;
                         break;

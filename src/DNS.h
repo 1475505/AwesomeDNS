@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#define REQ_SZLIMIT 1 << 16
+#define REQ_TIMELIMIT 60
+
+
  /*-----------------------------------------*
     |0 |1      4|5 |6 |7 |8 |9     12|13    15|
     |QR| Opcode |AA|TC|RD|RA|   Z    | RCODE  |

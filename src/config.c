@@ -68,34 +68,7 @@ uint32_t findIP(char* name, uint8_t* found){
     else res = searchCache(name, &ip, &ttl);
     if(res) log(1, "\n %s hit the cache!\n", name);
     //todo: what if not found?
-    else log(1, "\n %s not found in configFIle, connecting to %s\n", name, serverName);
+    else log(1, "\n%s not found in configFile, connecting to %s\n", name, serverName);
     return 0;
 }
 
-void connectCloudDNS(){// connect to cloud DNS code outline. TODO
-    struct sockaddr_in servaddr;
-	int sockfd, n;
-	char buf[512];
-	char str[INET_ADDRSTRLEN];
-	socklen_t servaddr_len;
-    
-	sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-
-	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-	inet_pton(AF_INET, serverName, &servaddr.sin_addr);
-	servaddr.sin_port = htons(53);
-    
-	while (fgets(buf, 512, stdin) != NULL) {
-		n = sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-		if (n == -1)
-			perr_exit("sendto error");
-
-		n = recvfrom(sockfd, buf, 512, 0, NULL, 0);
-		if (n == -1)
-			perr_exit("recvfrom error");
-	  
-		Write(STDOUT_FILENO, buf, n);
-	}
-	Close(sockfd);
-}
