@@ -1,4 +1,5 @@
 #include "cache.h"
+#include "utils.h"
 
 extern char* configFile;
 
@@ -22,6 +23,7 @@ void initCache()
 //Add a record to cache
 void addCache(char * name, uint32_t ip, uint32_t ttl)
 {
+    log(1, "%s->%s added to cache\n", name, ip);
     struct listNode * ln = (struct listNode *)malloc(sizeof(struct listNode));
     strcpy(ln->name, name);
     ln->ip = ip;

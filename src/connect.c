@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 Request requests[REQ_SZLIMIT];
-extern char *serverName;
+extern char serverName[16];
 
 uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS code outline. TODO
   struct sockaddr_in clientAddr;
@@ -47,8 +47,7 @@ uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS code outline. TODO
 
   bzero(&servaddr, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
-  //bug: cannot access serverName - SegFault. same as puts(serverName)
-  inet_pton(AF_INET, "8.8.8.8", &servaddr.sin_addr);  
+  inet_pton(AF_INET, serverName, &servaddr.sin_addr);  
   servaddr.sin_port = htons(53);
 
   n = sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr,
