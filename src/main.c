@@ -146,7 +146,6 @@ int DNS_process(char* buf, int len) {
                         {
                             dns.header->rcode = 0;
                             dns.header->ANcount = htons(1);
-                            dns.answer = (RRformat *)malloc(sizeof(RRformat));
                             dns.answer->name = dns.question->Qname;
                             dns.answer->type = htons(1);
                             dns.answer->clas = htons(1);
