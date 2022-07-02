@@ -173,16 +173,37 @@ void log(int x, char *fmt, ...) {
 
 void writeAN(char * start, DNS dns)
 {
-  int i, j = 0;
+  int i, j = 0, length = 0;
   for(i = 0; i < strlen(dns.question->Qname);i++)
   {
     if(dns.question->Qname[i] == '.')
     {
-      start[j] = i;
+      start[j] = length;
+      length = 0;
       j = i + 1;
     }
-    else start[i + 1] = dns.question->Qname[i];
+    else
+    {
+      length++;
+      start[i + 1] = dns.question->Qname[i];
+    }
   }//convert to standard format
+  sizeof(RRformat);
+  start[j] = length;
   start[strlen(dns.question->Qname) + 1] = '\0';
-  memcpy(start + strlen(dns.question->Qname) + 2, dns.answer + sizeof(char *), sizeof(RRformat) - sizeof(char *));
+  start[strlen(dns.question->Qname) + 2] = dns.answer->type / (1 << 8);
+  start[strlen(dns.question->Qname) + 3] = dns.answer->type % (1 << 8);
+  start[strlen(dns.question->Qname) + 4] = dns.answer->clas / (1 << 8);
+  start[strlen(dns.question->Qname) + 5] = dns.answer->clas % (1 << 8);
+  start[strlen(dns.question->Qname) + 6] = dns.answer->TTL / (1 << 24);
+  start[strlen(dns.question->Qname) + 7] = (dns.answer->TTL / (1 << 16)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 8] = (dns.answer->TTL / (1 << 8)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 9] = dns.answer->TTL % (1 << 8);
+  start[strlen(dns.question->Qname) + 10] = dns.answer->RDlength / (1 << 8);
+  start[strlen(dns.question->Qname) + 11] = dns.answer->RDlength % (1 << 8);
+  start[strlen(dns.question->Qname) + 12] = dns.answer->Rdata / (1 << 24);
+  start[strlen(dns.question->Qname) + 13] = (dns.answer->Rdata / (1 << 16)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 14] = (dns.answer->Rdata / (1 << 8)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 15] = dns.answer->Rdata % (1 << 8);
+  start[strlen(dns.question->Qname) + 16] = '\0';
 }

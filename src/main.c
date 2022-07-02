@@ -153,6 +153,7 @@ int DNS_process(char *buf, ssize_t len) {
             dns.answer->RDlength = htons(4);
             // memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));//bug
             writeAN(buf + bias, dns);
+            memset(buf + bias + strlen(dns.question->Qname) + 16, 0, MAXLINE - (bias + strlen(dns.question->Qname) + 16));
             len += sizeof(RRformat) - sizeof(char *) + strlen(dns.question->Qname) + 2;
           }
         }
