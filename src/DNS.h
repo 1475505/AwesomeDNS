@@ -70,7 +70,7 @@ typedef struct RRformat {
     uint16_t clas;
     uint32_t TTL;
     uint16_t RDlength;  //数据长度
-    uint32_t* Rdata;    //实际数据"该数据的格式依赖于类型字段的值。对于类型 1（A记录）资源数据是4字节的IP地址。"
+    uint32_t Rdata;    //实际数据"该数据的格式依赖于类型字段的值。对于类型 1（A记录）资源数据是4字节的IP地址。"
 } RRformat;
 
 // DNS 报文.后三段格式相同，每段都是由0~n个资源记录(Resource Record)构成

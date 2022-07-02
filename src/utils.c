@@ -96,12 +96,10 @@ size_t readRRs(char *buf, RRformat *RRs, uint16_t RRcount, size_t bias) {
     bias += 2;
     RRs[i].Rdata = (uint32_t *)malloc(sizeof(uint32_t) * RRs[i].RDlength);
     size_t j;
-    for (j = 0; j < RRs[i].RDlength; j++) {
-      RRs[i].Rdata[j] =
-          (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16) +
-          (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
-      bias += 4;
-    }
+    RRs[i].Rdata =
+        (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16) +
+        (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
+    bias += 4;
   }
   return bias;
 }

@@ -29,8 +29,9 @@
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
+extern Request requests[REQ_SZLIMIT];
 
-void DNS_process(char* buf, int len);
+int DNS_process(char* buf, int len);
 void DNS_process_test(char* buf, int len);
 
 int main(int argc, char* argv[]) {
@@ -54,7 +55,7 @@ char buf[MAXLINE];
         while (fscanf(fp, "%s %s", ipstr, name) != EOF)
         {
             uint32_t ip = inet_addr(ipstr);
-            insertTrie(name, ntohl(ip), 255);
+            insertTrie(name, ntohl(ip), 86400);
             /* code */
             memset(ipstr, 0, 15);
             memset(name, 0, 256);
@@ -88,9 +89,8 @@ char buf[MAXLINE];
         log(2, "%s\n", buf);
 
         
-        DNS_process(buf, n);  // You can use _test to test connection.
-        
-        n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
+        int n = DNS_process(buf, n);  // You can use _test to test connection.
+        if(n) n = sendto(sockfd, buf, n, 0, (struct sockaddr*)&cliaddr,
                    sizeof(cliaddr));
 
         // LOG(2, strcat("Send:", buf));
@@ -101,7 +101,7 @@ char buf[MAXLINE];
     return 0;
 }
 
-void DNS_process(char* buf, int len) {
+int DNS_process(char* buf, int len) {
 // #ifdef DEBUG
 //     assert(sizeof(dnsHeader) == 12);
 // #endif
@@ -112,79 +112,113 @@ void DNS_process(char* buf, int len) {
     DNS dns;
     size_t bias;
     dns.header = (DNSHeader *)buf;
-    dns.header->QDcount = dns.header->QDcount;
-    dns.header->ANcount = dns.header->ANcount;
-    dns.header->ARcount = dns.header->ARcount;
-    dns.header->NScount = dns.header->NScount;
     log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n"\
     , ntohs(dns.header->QDcount), ntohs(dns.header->ANcount), ntohs(dns.header->NScount), ntohs(dns.header->ARcount));
     dns.question = (Qsection*)malloc(ntohs(dns.header->QDcount) * sizeof(Qsection));
     bias = readQuestions(buf, dns.question, ntohs(dns.header->QDcount));
-    dns.answer = (RRformat*)malloc(ntohs(dns.header->ANcount) * sizeof(RRformat));
-    bias = readRRs(buf, dns.answer, ntohs(dns.header->ANcount), bias);
-    dns.authority = (RRformat*)malloc(ntohs(dns.header->NScount) * sizeof(RRformat));
-    bias = readRRs(buf, dns.authority, ntohs(dns.header->NScount), bias);
-    dns.additional = (RRformat*)malloc(ntohs(dns.header->ARcount) * sizeof(RRformat));
-    bias = readRRs(buf, dns.additional, ntohs(dns.header->ARcount), bias);
+    // dns.answer = (RRformat*)malloc(ntohs(dns.header->ANcount) * sizeof(RRformat));
+    // bias = readRRs(buf, dns.answer, ntohs(dns.header->ANcount), bias);
+    // dns.authority = (RRformat*)malloc(ntohs(dns.header->NScount) * sizeof(RRformat));
+    // bias = readRRs(buf, dns.authority, ntohs(dns.header->NScount), bias);
+    // dns.additional = (RRformat*)malloc(ntohs(dns.header->ARcount) * sizeof(RRformat));
+    // bias = readRRs(buf, dns.additional, ntohs(dns.header->ARcount), bias);
 #ifdef DEBUG
     assert(sizeof(dns) >= 12);
 #endif
     if(dns.header->qr == 0)//if it receives from client
     {
-        if(dns.header->opcode == 0)
+        if(dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1)
         {
-            for (int i = 0; i < ntohs(dns.header->QDcount); i++) {
-                char url[128];
-                switch (dns.question[i].Qtype) {     // todo
-                    case 2:
-                        // fallthrough
-                    case 1://ipv4
-                        dns.answer[i].RDlength = htons(4);
-                        uint16_t data[2];
-                        uint8_t found = 0;
-                        uint32_t ip = findIP(dns.question[i].Qname, &found);
+            
+            char url[128];
+            uint16_t data[2];
+            uint8_t found = 1;
+            uint32_t ip;
+            switch (dns.question->Qtype) {     // todo
+                case 2:
+                    // fallthrough
+                case 1://ipv4
+                    ip = findIP(dns.question->Qname, &found, &dns);
+                    if(found)
+                    {
                         if (ip == 0) dns.header->rcode = 3;
                         else
                         {
                             dns.header->rcode = 0;
                             dns.header->ANcount = htons(1);
+                            dns.answer = (RRformat *)malloc(sizeof(RRformat));
+                            dns.answer->name = dns.question->Qname;
+                            dns.answer->type = htons(1);
+                            dns.answer->clas = htons(1);
+                            dns.answer->RDlength = htons(4);
+                            memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));
+                            len += sizeof(RRformat);
                         }
-                        if (!found) {
-                            dns.header->ID = connectCloudDNS(dns);
+                    }
+                    
+                    else {
+                        dns.header->ID = connectCloudDNS(dns);
+                        struct sockaddr_in servaddr;
+                        int sockfd, n;
+                        char buf[512];
+                        char str[INET_ADDRSTRLEN];
+                        socklen_t servaddr_len;
+
+                        sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+
+                        bzero(&servaddr, sizeof(servaddr));
+                        servaddr.sin_family = AF_INET;
+                        inet_pton(AF_INET, serverName, &servaddr.sin_addr);  
+                        servaddr.sin_port = htons(53);
+
+                        n = sendto(sockfd, buf, len, 0, (struct sockaddr *)&servaddr,
+                                    sizeof(servaddr));
+                        if (n == -1)
+                        {
+                            perr_exit("sendto error");
+                            requests[dns.header->ID].used = 0;
                         }
-                        memcpy(data, &ip, sizeof data);
-                        dns.answer[i].Rdata = data;
-                        break;
-                    case 28://ipv6
-                        break;
-                    case 5:
-                        dns.answer[i].Rdata = url;  // todo: should return 别名
-                        break;
-                    default:
-                        break;
-                }
+
+
+                        //   n = recvfrom(sockfd, buf, 512, 0, NULL, 0);
+                        //   if (n == -1)
+                        //     perr_exit("recvfrom error");
+                        //   Write(STDOUT_FILENO, buf, n);
+
+                        Close(sockfd);
+                        return 0;
+                    }
+                    break;
+                case 28://ipv6
+                    break;
+                case 5:
+                    dns.answer->Rdata = url;  // todo: should return 别名
+                    break;
+                default:
+                    break;
+                
             }
-        
             // TODO: should wrap, not epoll.
         }
     }
     else//it receives from server
     {
-        if(dns.header->opcode == 0)
+        if(dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1 && ntohs(dns.answer->type) == 1)
         {
-            int i;
-            for(i = 0; i < ntohs(dns.header->ANcount); i++)
-            {
-                if(ntohs(dns.answer[i].type) == 1)
-                {
-                    addCache(dns.question[i].Qname, ntohl(dns.answer[i].Rdata[i]), ntohl(dns.answer[i].TTL));
-                }
-            }
-            
+            addCache(dns.question->Qname, ntohl(dns.answer->Rdata), ntohl(dns.answer->TTL));
         }
+        uint16_t idServer = dns.header->ID;
+        struct sockaddr_in cliAddr;
+        cliAddr.sin_family = AF_INET;
+        uint16_t clientId = requests[idServer].id;
+        cliAddr.sin_addr.s_addr = htonl(requests[idServer].ip);
+        cliAddr.sin_port = htonl(requests[idServer].port);
+        requests[idServer].used = 0;
+        log(2, "receive the response %d -> %d", idServer, clientId);
+        return 0;//need to send?
         //not finished yet
     }
-    memcpy(buf, &dns, sizeof dns);
+    return len;
 }
 
 void DNS_process_test(char* buf, int len) {

@@ -16,19 +16,16 @@ uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS code outline. TODO
   uint16_t oldID = dns.header->ID;
   log(2, "transfering id %d", oldID);
   uint16_t newID = oldID;
-  while (!requests[newID].used) {
+  while (requests[newID].used) {
     if (time(NULL) - requests[newID].startTime > REQ_TIMELIMIT)
       requests[newID].used = 0;
-    if (!requests[newID].used) {
-      log(2, "-> %d\n", newID);
-      break;
-    }
     newID = (newID + 1) % REQ_SZLIMIT;
     if (newID == oldID) {
       perr_exit("Connection Pool FULL");
     }
   }
 
+  log(2, "-> %d\n", newID);
   requests[newID].used = 1;
   requests[newID].startTime = time(NULL);
   requests[newID].ip = ntohl(clientAddr.sin_addr.s_addr);
@@ -37,30 +34,7 @@ uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS code outline. TODO
 
   dns.header->ID = newID;
 
-  struct sockaddr_in servaddr;
-  int sockfd, n;
-  char buf[512];
-  char str[INET_ADDRSTRLEN];
-  socklen_t servaddr_len;
-
-  sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-
-  bzero(&servaddr, sizeof(servaddr));
-  servaddr.sin_family = AF_INET;
-  inet_pton(AF_INET, serverName, &servaddr.sin_addr);  
-  servaddr.sin_port = htons(53);
-
-  n = sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr,
-             sizeof(servaddr));
-  if (n == -1)
-    perr_exit("sendto error");
-
-//   n = recvfrom(sockfd, buf, 512, 0, NULL, 0);
-//   if (n == -1)
-//     perr_exit("recvfrom error");
-//   Write(STDOUT_FILENO, buf, n);
-
-  Close(sockfd);
+  
 
   return newID;
 }
