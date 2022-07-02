@@ -84,6 +84,6 @@ uint32_t findIP(char* name, uint8_t* found, DNS * dns){
         log(1, "\n%s not found in configFile, connecting to %s\n", name, serverName);
         *found = 0;
     }
-    return 0;
+    return ip;
 }
 
