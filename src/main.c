@@ -151,8 +151,9 @@ int DNS_process(char *buf, ssize_t len) {
             dns.answer->type = htons(1);
             dns.answer->clas = htons(1);
             dns.answer->RDlength = htons(4);
-            memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));
-            len += sizeof(RRformat);
+            // memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));//bug
+            writeAN(buf + bias, dns);
+            len += sizeof(RRformat) - sizeof(char *) + strlen(dns.question->Qname) + 2;
           }
         }
         else {

@@ -170,3 +170,19 @@ void log(int x, char *fmt, ...) {
     va_end(arg_ptr);
   }
 }
+
+void writeAN(char * start, DNS dns)
+{
+  int i, j = 0;
+  for(i = 0; i < strlen(dns.question->Qname);i++)
+  {
+    if(dns.question->Qname[i] == '.')
+    {
+      start[j] = i;
+      j = i + 1;
+    }
+    else start[i + 1] = dns.question->Qname[i];
+  }//convert to standard format
+  start[strlen(dns.question->Qname) + 1] = '\0';
+  memcpy(start + strlen(dns.question->Qname) + 2, dns.answer + sizeof(char *), sizeof(RRformat) - sizeof(char *));
+}
