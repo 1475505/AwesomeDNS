@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
   config(argc, argv);
 #ifdef DEBUG
   debug_info = 3;
+//   freopen("log", "w", stdout);
 #endif
   struct sockaddr_in servaddr, cliaddr;
   socklen_t cliaddr_len;
@@ -85,11 +86,11 @@ int main(int argc, char *argv[]) {
     // log(3, "%s\n", buf);
     
     int respn = DNS_process(buf, n); // You can use _test to test connection.
+    log(3, "returning to client of %d B\n", respn);
+    
     if (respn)
-      n = sendto(sockfd, buf, n, 0, (struct sockaddr *)&cliaddr,
+      n = sendto(sockfd, buf, respn, 0, (struct sockaddr *)&cliaddr,
                  sizeof(cliaddr));
-
-    // LOG(2, strcat("Send:", buf));
     if (n == -1)
       perr_exit("sendto error");
   }
@@ -106,7 +107,6 @@ int DNS_process(char *buf, ssize_t len) {
   // RRformat rr_auth[dnsHeader.NScount];
   // RRformat rr_add[dnsHeader.ARcount];
   DNS dns;
-log(3, "start processing message of %d B\n", len);    
   size_t bias;
   dns.header = (DNSHeader *)buf;
   log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n",
@@ -128,6 +128,7 @@ log(3, "start processing message of %d B\n", len);
 #endif
   if (dns.header->qr == 0) // if it receives from client
   {
+    log(2, "start processing client-message of %d B\n", len);    
     if (dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1) {
 
       char url[128];
@@ -144,6 +145,7 @@ log(3, "start processing message of %d B\n", len);
             dns.header->rcode = 3;
           else {
             dns.header->rcode = 0;
+            dns.header->qr = 1;
             dns.header->ANcount = htons(1);
             dns.answer->name = dns.question->Qname;
             dns.answer->type = htons(1);
@@ -153,7 +155,6 @@ log(3, "start processing message of %d B\n", len);
             len += sizeof(RRformat);
           }
         }
-
         else {
           dns.header->ID = connectCloudDNS(dns);
           struct sockaddr_in servaddr;
@@ -197,6 +198,7 @@ log(3, "start processing message of %d B\n", len);
     }
   } else // it receives from server
   {
+    log(2, "begin processing server-message of %d B\n", len);    
     if (dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1 &&
         ntohs(dns.answer->type) == 1) {
       addCache(dns.question->Qname, ntohl(dns.answer->Rdata),
