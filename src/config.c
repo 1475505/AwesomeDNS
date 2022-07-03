@@ -18,6 +18,7 @@
 
 uint8_t debug_info = 2;
 char serverName[16] = "202.106.0.20";//default
+// char serverName[16] = "192.168.32.2";//wxl
 char configFile[64] = "dnsrelay.txt";//default
 
 int dotCount(char* ip){

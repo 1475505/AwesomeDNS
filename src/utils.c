@@ -37,7 +37,7 @@ uint32_t ip2hex(char *ip) {
 uint32_t getURL(char *name, char *res, size_t * offset) {
   assert(name);
   assert(res);
-  log(2, "getting URL for %s:", name);
+  log(2, "getting URL :");
   int len = strlen(name);
   (*offset) += len + 1;
   int idx = 0;
@@ -102,50 +102,6 @@ size_t readRRs(char *buf, RRformat *RRs, uint16_t RRcount, size_t bias) {
     bias += 4;
   }
   return bias;
-}
-
-char *getName(char *name, char *buf, size_t *bias) {
-  size_t size = buf[(*bias)++], all = 0;
-  name = NULL;
-
-  while (size > 0) {
-    all += size;
-    char *new = malloc(all * sizeof(char));
-    if (new){
-      log(2, "get name %s\n", name);
-    } else {
-      printf("error to malloc of size %d\n", all);
-      break;
-    }
-    memset(new, 0, all);
-    if (name != NULL) {
-      int j;
-      for (j = 0; j < strlen(name); j++) {
-        new[j] = name[j];
-      }
-      free(name);
-    }
-    printf("current size: %d\n", size);
-    memcpy(new + strlen(new), buf + (*bias), size);
-    (*bias) += size;
-    name = new;
-    size = buf[(*bias)++];
-    if (size) {
-      all++;
-      new = malloc((all) * sizeof(char));
-      memset(new, 0, all);
-      if (name != NULL) {
-        int j;
-        for (j = 0; j < strlen(name); j++) {
-          new[j] = name[j];
-        }
-        free(name);
-      }
-      new[strlen(new)] = '.';
-      name = new;
-    }
-  }
-  return name;
 }
 
 uint32_t mapIP(char *url) {

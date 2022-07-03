@@ -144,6 +144,7 @@ int DNS_process(char *buf, ssize_t len) {
           if (ip == 0)
             dns.header->rcode = 3;
           else {
+            dns.header->ra = 1;
             dns.header->rcode = 0;
             dns.header->qr = 1;
             dns.header->ANcount = htons(1);
@@ -158,6 +159,7 @@ int DNS_process(char *buf, ssize_t len) {
           }
         }
         else {
+          dns.header->ra = 1;
           dns.header->ID = connectCloudDNS(dns);
           struct sockaddr_in servaddr;
           int sockfd, n;
