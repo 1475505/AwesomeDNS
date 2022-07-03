@@ -26,10 +26,14 @@
 #define MAXLINE 512
 #define SERV_PORT 53
 
+extern int sockfd;
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
 extern Request requests[REQ_SZLIMIT];
+
+struct sockaddr_in servaddr, cliaddr;
+socklen_t cliaddr_len;
 
 int DNS_process(char *buf, ssize_t len);
 void DNS_process_test(char *buf, int len);
@@ -40,9 +44,6 @@ int main(int argc, char *argv[]) {
   debug_info = 3;
 //   freopen("log", "w", stdout);
 #endif
-  struct sockaddr_in servaddr, cliaddr;
-  socklen_t cliaddr_len;
-  int sockfd;
   char buf[MAXLINE];
   char str[INET_ADDRSTRLEN];
   int i, n;
@@ -64,14 +65,22 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+  sockfd = Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
   bzero(&servaddr, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servaddr.sin_addr.s_addr = inet_addr(serverName);
   servaddr.sin_port = htons(SERV_PORT);
 
-  Bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+  memset(&cliaddr, 0, sizeof(struct sockaddr_in));
+  cliaddr.sin_family = AF_INET;
+  cliaddr.sin_addr.s_addr = INADDR_ANY;
+  cliaddr.sin_port = htons(SERV_PORT);
+
+  const int REUSE = 1;
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&REUSE, sizeof(REUSE));
+
+  Bind(sockfd, (struct sockaddr *)&cliaddr, sizeof(servaddr));
 
   printf("Accepting connections ...\n");
   while (1) {
@@ -161,20 +170,8 @@ int DNS_process(char *buf, ssize_t len) {
         else {
           dns.header->ra = 1;
           dns.header->ID = connectCloudDNS(dns);
-          struct sockaddr_in servaddr;
-          int sockfd, n;
-          char str[INET_ADDRSTRLEN];
-          socklen_t servaddr_len;
-
-          sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-
-          bzero(&servaddr, sizeof(servaddr));
-          servaddr.sin_family = AF_INET;
-          inet_pton(AF_INET, serverName, &servaddr.sin_addr);
-          servaddr.sin_port = htons(53);
-
           assert(dns.header->z == 0);
-          n = sendto(sockfd, buf, len, 0, (struct sockaddr *)&servaddr,
+          ssize_t n = sendto(sockfd, buf, len, 0, (struct sockaddr *)&servaddr,
                      sizeof(servaddr));
           if (n == -1) {
             perr_exit("sendto error");
@@ -186,7 +183,7 @@ int DNS_process(char *buf, ssize_t len) {
           //     perr_exit("recvfrom error");
           //   Write(STDOUT_FILENO, buf, n);
 
-          Close(sockfd);
+          // Close(sockfd);
           return 0;
         }
         break;
