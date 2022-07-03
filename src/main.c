@@ -93,10 +93,10 @@ int main(int argc, char *argv[]) {
     log(0, "[serving]%s:%d...\n", &str, ntohs(cliaddr.sin_port));
 
     // log(3, "%s\n", buf);
-    
+
     int respn = DNS_process(buf, n); // You can use _test to test connection.
     log(3, "returning to client of %d B\n", respn);
-    
+
     if (respn)
       n = sendto(sockfd, buf, respn, 0, (struct sockaddr *)&cliaddr,
                  sizeof(cliaddr));
@@ -117,6 +117,7 @@ int DNS_process(char *buf, ssize_t len) {
   // RRformat rr_add[dnsHeader.ARcount];
   DNS dns;
   size_t bias;
+parse:
   dns.header = (DNSHeader *)buf;
   log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n",
       ntohs(dns.header->QDcount), ntohs(dns.header->ANcount),
@@ -137,7 +138,7 @@ int DNS_process(char *buf, ssize_t len) {
 #endif
   if (dns.header->qr == 0) // if it receives from client
   {
-    log(2, "start processing client-message of %d B\n", len);    
+    log(2, "start processing client-message of %d B\n", len);
     if (dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1) {
 
       char url[128];
@@ -149,25 +150,7 @@ int DNS_process(char *buf, ssize_t len) {
         // fallthrough
       case 1: // ipv4
         ip = findIP(dns.question->Qname, &found, &dns);
-        if (found) {
-          if (ip == 0)
-            dns.header->rcode = 3;
-          else {
-            dns.header->ra = 1;
-            dns.header->rcode = 0;
-            dns.header->qr = 1;
-            dns.header->ANcount = htons(1);
-            dns.answer->name = dns.question->Qname;
-            dns.answer->type = 1;
-            dns.answer->clas = 1;
-            dns.answer->RDlength = 4;
-            // memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));//bug
-            writeAN(buf + bias, dns);
-            memset(buf + bias + strlen(dns.question->Qname) + 16, 0, MAXLINE - (bias + strlen(dns.question->Qname) + 16));
-            len += sizeof(RRformat) - sizeof(char *) + strlen(dns.question->Qname) + 2;
-          }
-        }
-        else {
+        if (!found) {
           dns.header->ra = 1;
           dns.header->ID = connectCloudDNS(dns);
           assert(dns.header->z == 0);
@@ -186,6 +169,7 @@ int DNS_process(char *buf, ssize_t len) {
           // Close(sockfd);
           return 0;
         }
+        return len;
         break;
       case 28: // ipv6
         break;
@@ -199,7 +183,7 @@ int DNS_process(char *buf, ssize_t len) {
     }
   } else // it receives from server
   {
-    log(2, "begin processing server-message of %d B\n", len);    
+    log(2, "begin processing server-message of %d B\n", len);
     if (dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1 &&
         ntohs(dns.answer->type) == 1) {
       addCache(dns.question->Qname, ntohl(dns.answer->Rdata),
