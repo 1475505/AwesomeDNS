@@ -8,7 +8,7 @@
 */
 #include "connect.h"
 #include <sys/types.h>
-#define DEBUG
+// #define DEBUG
 #include "DNS.h"
 #include "Socket.h"
 #include "config.h"
