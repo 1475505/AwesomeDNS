@@ -94,8 +94,6 @@ size_t readRRs(char *buf, RRformat *RRs, uint16_t RRcount, size_t bias) {
     bias += 4;
     RRs[i].RDlength = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
     bias += 2;
-    RRs[i].Rdata = (uint32_t *)malloc(sizeof(uint32_t) * RRs[i].RDlength);
-    size_t j;
     RRs[i].Rdata =
         (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16) +
         (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
