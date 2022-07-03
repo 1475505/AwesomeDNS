@@ -154,13 +154,13 @@ parse:
           if (ip == 0)
             dns.header->rcode = 3;
           else {
+            dns.answer->name = dns.question->Qname;
             dns.header->rcode = 0;
             dns.header->qr = 1;
             dns.header->ANcount = htons(1);
-            dns.answer->name = dns.question->Qname;
-            dns.answer->type = htons(1);
-            dns.answer->clas = htons(1);
-            dns.answer->RDlength = htons(4);
+            dns.answer->type = 1;
+            dns.answer->clas = 1;
+            dns.answer->RDlength = 4;
             writeAN(buf + bias, dns);
             len += sizeof(RRformat) - sizeof(char *) + strlen(dns.question->Qname) + 2;
           }
@@ -175,6 +175,7 @@ parse:
             perr_exit("sendto error");
             requests[dns.header->ID].used = 0;
           }
+          free(dns.question->Qname);
           free(dns.question);
           return 0;
         }
@@ -206,11 +207,15 @@ parse:
     requests[idServer].used = 0;
     log(2, "receive the response %d -> %d", idServer, clientId);
     free(dns.answer->name);
+    free(dns.question->Qname);
     free(dns.question);
     free(dns.answer);
     return 0; // need to send?
     // not finished yet
   }
+  else return 0;
+  free(dns.answer);
+  free(dns.question->Qname);
   free(dns.question);
   return 0;
 }

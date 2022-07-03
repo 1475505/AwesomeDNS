@@ -59,23 +59,18 @@ void config(int argc, char* argv[]){
 
 /* url has been dotted by called `getURL`. now Search the file to get ip */
 uint32_t findIP(char* name, uint8_t* found, DNS * dns){
-    FILE* fp = fopen(configFile, "r");
-    if (!fp){
-        perr_exit("Config File %s Not Found\n!");
-    }
+    dns->answer = (RRformat *)malloc(sizeof(RRformat));
     uint32_t ip, ttl;
     bool res = searchTrie(name, &ip, &ttl);
     if(res) 
     {
         log(1, "\n %s hit the trie tree in configFile!\n", name);
-        dns->answer = (RRformat *)malloc(sizeof(RRformat));
         dns->answer->TTL = ttl;
         dns->answer->Rdata = ip;
     }
     else res = searchCache(name, &ip, &ttl);
     if(res) {
         log(1, "\n %s hit the cache!\n", name);
-        dns->answer = (RRformat *)malloc(sizeof(RRformat));
         dns->answer->TTL = ttl;
         dns->answer->Rdata = ip;
     }
