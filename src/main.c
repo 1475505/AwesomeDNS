@@ -7,26 +7,37 @@
      考虑多个计算机上的客户端会同时查询，需要进行消息ID的转换
 */
 #include "connect.h"
-#include <sys/types.h>
 #define DEBUG
 #include "DNS.h"
 #include "Socket.h"
 #include "config.h"
 #include "utils.h"
-#include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
+#ifdef _WIN32
+#include <WinSock2.h>
+
+WSADATA wsaData;
+extern SOCKET Sock;
+#elif __linux__
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+extern int sockfd;
+
+static int Sock;
+#endif
 
 #define MAXLINE 512
 #define SERV_PORT 53
 
-extern int sockfd;
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
@@ -64,6 +75,15 @@ int main(int argc, char *argv[]) {
     printf("open fail errno = %d reason = %s \n", errno, strerror(errno));
   }
   fclose(fp);
+
+  #ifdef _WIN32
+    int status = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (status != 0)
+    {
+        log(0, "Windows Socket DLL Error\n");
+        exit(-1);
+    }
+  #endif
 
   sockfd = Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -104,6 +124,10 @@ int main(int argc, char *argv[]) {
     if (n == -1)
       perr_exit("sendto error");
   }
+
+#ifdef _WIN32
+    WSACleanup();
+#endif
 
   return 0;
 }

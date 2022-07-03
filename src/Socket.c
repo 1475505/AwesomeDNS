@@ -2,7 +2,11 @@
 #include <errno.h>
 #include <sys/socket.h>
 
+#ifdef _WIN32
+SOCKET Sock;
+#elif __linux__
 int sockfd;
+#endif
 
 void perr_exit(const char *s)
 {
