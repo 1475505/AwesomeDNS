@@ -31,6 +31,9 @@ extern char serverName[16];
 extern char configFile[64];
 extern Request requests[REQ_SZLIMIT];
 
+int sockfd, csockfd;
+struct sockaddr_in servaddr, cldaddr, cliaddr;
+
 int DNS_process(char *buf, ssize_t len);
 void DNS_process_test(char *buf, int len);
 
@@ -40,9 +43,7 @@ int main(int argc, char *argv[]) {
   debug_info = 3;
 //   freopen("log", "w", stdout);
 #endif
-  struct sockaddr_in servaddr, cliaddr;
   socklen_t cliaddr_len;
-  int sockfd;
   char buf[MAXLINE];
   char str[INET_ADDRSTRLEN];
   int i, n;
@@ -65,11 +66,16 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-
   bzero(&servaddr, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_port = htons(SERV_PORT);
+
+  csockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+  bzero(&cldaddr, sizeof(cldaddr));
+  cldaddr.sin_family = AF_INET;
+  cldaddr.sin_addr.s_addr = inet_addr(serverName);
+  cldaddr.sin_port = htons(SERV_PORT);
 
   Bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
@@ -149,15 +155,14 @@ parse:
           char str[INET_ADDRSTRLEN];
           socklen_t servaddr_len;
 
-          int csockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-          bzero(&servaddr, sizeof(servaddr));
-          servaddr.sin_family = AF_INET;
-          inet_pton(AF_INET, serverName, &servaddr.sin_addr);
-          servaddr.sin_port = htons(53);
+          // csockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+          // bzero(&servaddr, sizeof(servaddr));
+          // servaddr.sin_family = AF_INET;
+          // inet_pton(AF_INET, serverName, &servaddr.sin_addr);
+          // servaddr.sin_port = htons(53);
 
-          assert(dns.header->z == 0);
-          n = sendto(csockfd, buf, len, 0, (struct sockaddr *)&servaddr,
-                     sizeof(servaddr));
+          n = sendto(csockfd, buf, len, 0, (struct sockaddr *)&cldaddr,
+                     sizeof(cldaddr));
           if (n == -1) {
             perr_exit("sendto error");
             requests[dns.header->ID].used = 0;
@@ -182,7 +187,7 @@ parse:
           // log(2, "receive the response %d -> %d", idServer, clientId);
           // ip = findIP(dns.question->Qname, &found, &dns);
           // assert(found);
-          Close(csockfd);
+          
           goto parse;
         }
         if (ip == 0)
@@ -231,7 +236,7 @@ parse:
     cliAddr.sin_port = htonl(requests[idServer].port);
     requests[idServer].used = 0;
     log(2, "receive the response %d -> %d", idServer, clientId);
-    return 0; // need to send?
+    // return 0; // need to send?
     // not finished yet
   }
   return len;
