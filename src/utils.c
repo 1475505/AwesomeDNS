@@ -38,7 +38,7 @@ uint32_t ip2hex(char *ip) {
 uint32_t getURL(char *name, char *res, size_t * offset) {
   assert(name);
   assert(res);
-  log(2, "getting URL :");
+  log(1, "getting URL :");
   int len = strlen(name);
   (*offset) += len + 1;
   int idx = 0;

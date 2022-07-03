@@ -1,5 +1,7 @@
 This is the UDP version of the DNSrelay.
 
+![](https://c2cpicdw.qpic.cn/offpic_new/1146802625//1146802625-3051874032-83C797D7633AB787A78F9FD922BBD483/0?term=255&file=83c797d7633ab787a78f9fd922bbd48319636-684-523.png)
+
 # Linux Commands
 To see if the server program is working, run
 ```

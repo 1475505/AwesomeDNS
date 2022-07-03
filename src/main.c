@@ -7,7 +7,7 @@
      考虑多个计算机上的客户端会同时查询，需要进行消息ID的转换
 */
 #include "connect.h"
-#define DEBUG
+// #define DEBUG
 #include "DNS.h"
 #include "Socket.h"
 #include "config.h"

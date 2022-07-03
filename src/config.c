@@ -88,13 +88,13 @@ uint32_t findIP(char* name, uint8_t* found, DNS * dns){
     bool res = searchTrie(name, &ip, &ttl);
     if(res) 
     {
-        log(1, "\n %s hit the trie tree in configFile!\n", name);
+        log(2, "\n %s hit the trie tree in configFile!\n", name);
         dns->answer->TTL = ttl;
         dns->answer->Rdata = ip;
     }
     else res = searchCache(name, &ip, &ttl);
     if(res) {
-        log(1, "\n %s hit the cache!\n", name);
+        log(2, "\n %s hit the cache!\n", name);
         dns->answer->TTL = ttl;
         dns->answer->Rdata = ip;
     }

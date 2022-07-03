@@ -25,7 +25,7 @@ void addCache(char * name, uint32_t ip, uint32_t ttl)
 {
     struct sockaddr_in tempAddr;
     tempAddr.sin_addr.s_addr = htonl(ip);
-    log(1, "%s->%s added to cache\n", name, inet_ntoa(tempAddr.sin_addr));
+    log(2, "%s->%s added to cache\n", name, inet_ntoa(tempAddr.sin_addr));
     struct listNode * ln = (struct listNode *)malloc(sizeof(struct listNode));
     strcpy(ln->name, name);
     ln->ip = ip;
