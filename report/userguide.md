@@ -46,6 +46,8 @@ and add `nameserver 127.0.0.1` at the top.
 
 You don't need to comment the following DNS, just put 127.0.0.1 first.
 
+**For developers, you can run `sudo systemd-resolve --flush-caches` to clear local DNS caches in your machine, so that urls for testing won`t use the older one.**
+
 3. If you use Wifi
 
 You can enter "wifi-setting", choose your wifi and set DNS=127.0.0.1

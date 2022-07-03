@@ -214,7 +214,7 @@ int DNS_process(char *buf, ssize_t len) {
     // not finished yet
   }
   else return 0;
-  free(dns.answer);
+  // free(dns.answer);
   free(dns.question->Qname);
   free(dns.question);
   return 0;

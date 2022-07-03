@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "DNS.h"
 #include <assert.h>
+#include <netinet/in.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,17 +87,18 @@ size_t readRRs(char *buf, RRformat *RRs, uint16_t RRcount, size_t bias) {
   for (i = 0; i < RRcount; i++) {
     RRs[i].name = (char *)malloc((strlen(buf + bias)) * sizeof(char));
     getURL(buf + bias, RRs[i].name, &bias);
-    RRs[i].type = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
-    RRs[i].clas = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
-    bias += 4;
-    RRs[i].TTL = (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16) +
-                 (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
-    bias += 4;
-    RRs[i].RDlength = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
+    // RRs[i].type = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
+    RRs[i].type = ntohs(buf[bias]);
     bias += 2;
-    RRs[i].Rdata =
-        (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16) +
-        (uint32_t)(buf[bias + 2] << 8) + (uint32_t)(buf[bias + 3]);
+    RRs[i].clas = ntohs((buf[bias]));
+    bias += 2;
+    RRs[i].TTL = ntohl(*(uint32_t *)(buf + bias));
+    bias += 4;
+    RRs[i].RDlength = ntohs((buf[bias]));
+    bias += 2;
+    RRs[i].Rdata = ntohl(*(uint32_t *)(buf + bias - 1));
+    // RRs[i].Rdata = (uint32_t)(buf[bias] << 24) + (uint32_t)(buf[bias + 1] << 16)\
+    //  + (uint16_t)(buf[bias + 2] << 8) + (uint16_t)(buf[bias + 3]);
     bias += 4;
   }
   return bias;
