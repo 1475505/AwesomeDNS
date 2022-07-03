@@ -117,7 +117,6 @@ int DNS_process(char *buf, ssize_t len) {
   // RRformat rr_add[dnsHeader.ARcount];
   DNS dns;
   size_t bias;
-parse:
   dns.header = (DNSHeader *)buf;
   log(2, "get DNS header: QDcount %d, ANcount %d, NScount %d, ARcount %d\n",
       ntohs(dns.header->QDcount), ntohs(dns.header->ANcount),
