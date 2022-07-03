@@ -148,9 +148,9 @@ int DNS_process(char *buf, ssize_t len) {
             dns.header->qr = 1;
             dns.header->ANcount = htons(1);
             dns.answer->name = dns.question->Qname;
-            dns.answer->type = htons(1);
-            dns.answer->clas = htons(1);
-            dns.answer->RDlength = htons(4);
+            dns.answer->type = 1;
+            dns.answer->clas = 1;
+            dns.answer->RDlength = 4;
             // memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));//bug
             writeAN(buf + bias, dns);
             memset(buf + bias + strlen(dns.question->Qname) + 16, 0, MAXLINE - (bias + strlen(dns.question->Qname) + 16));
