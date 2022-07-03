@@ -154,6 +154,7 @@ parse:
           if (ip == 0)
             dns.header->rcode = 3;
           else {
+            dns.header->ra = 1;
             dns.answer->name = dns.question->Qname;
             dns.header->rcode = 0;
             dns.header->qr = 1;
