@@ -75,7 +75,7 @@ size_t readQuestions(char *buf, Qsection *questions, uint16_t QDcount) {
     getURL(buf + bias, questions[i].Qname, &bias);
     log(1, "%s \n", questions[i].Qname);
     questions[i].Qtype = (uint16_t)(buf[bias] << 8) + buf[bias + 1];
-    questions[i].Qtype = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
+    questions[i].Qclass = (uint16_t)(buf[bias + 2] << 8) + buf[bias + 3];
     bias += 4;
   }
   return bias;
