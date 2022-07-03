@@ -16,7 +16,7 @@
 2[-dd] - 调试信息级别2(输出冗长的调试信息)
 */
 
-uint8_t debug_info = 2;
+uint8_t debug_info = 0;
 char serverName[16] = "202.106.0.20";//default
 // char serverName[16] = "192.168.32.2";//wxl
 char configFile[64] = "dnsrelay.txt";//default
@@ -35,7 +35,7 @@ int dotCount(char* ip){
 void config(int argc, char* argv[]){
     /* May be this is the unix way to do this */
     int opt;
-    while ((opt = getopt(argc, argv, "d")) != -1){
+    while ((opt = getopt(argc, argv, "des:f:")) != -1){
         switch (opt) {
             case 'd':
                 debug_info = 1;
@@ -44,16 +44,40 @@ void config(int argc, char* argv[]){
                 debug_info = 2;
                 //use `optarg` to get the following settings.
                 break;
+            case 's':
+                strcpy(serverName, optarg);
+                break;
+            case 'f':
+                strcpy(configFile, optarg);
+                break;
+            default:
+                printf("usage: [-d | -e] [-s <cloud DNS server>] [-f "
+                "<config filename>]\n");
+                break;
         }
     }
+    printf("===WELCOME TO Awesome-DNS-relay by \033[40;31mwxl\033[0m, pyl and ll!===\n");
+    printf("如果对我们的程序感到满意，欢迎报考北京邮电大学～\n");
+    printf("\n\                                                  
+,------.  ,--.  ,--. ,---.                ,--.                  \n\
+|  .-.  \\ |  ,'.|  |'   .-' ,--.--. ,---. |  | ,--,--.,--. ,--. \n\
+|  |  \\  :|  |' '  |`.  `-. |  .--'| .-. :|  |' ,-.  | \\  '  /  \n\
+|  '--'  /|  | `   |.-'    ||  |   \\   --.|  |\\ '-'  |  \\   '   \n\
+`-------' `--'  `--'`-----' `--'    `----'`--' `--`--'.-'  /    \n\
+                                                      `---'     \n\
+");
+    sleep(1);
+    printf("current config:\n");
+    printf("log level: %d\n", debug_info);
+    printf("cloud DNS server: %s\n", serverName);
     /* Above comment done */
-    if (argc == 1) return;
-    for (int i = 1; i < argc; i++){
-        if (strcmp(argv[i], "-d")) debug_info = 1;
-        else if (strcmp(argv[i], "-dd")) debug_info = 2;
-        else if (dotCount(argv[i]) == 1) strcpy(serverName, argv[i]);
-        else if (i + 1 == argc) strcpy(configFile, argv[i]);
-    }
+    // if (argc == 1) return;
+    // for (int i = 1; i < argc; i++){
+    //     if (strcmp(argv[i], "-d")) debug_info = 1;
+    //     else if (strcmp(argv[i], "-dd")) debug_info = 2;
+    //     else if (dotCount(argv[i]) == 1) strcpy(serverName, argv[i]);
+    //     else if (i + 1 == argc) strcpy(configFile, argv[i]);
+    // }
     return;
 }
 
