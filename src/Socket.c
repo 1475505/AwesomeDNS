@@ -2,6 +2,8 @@
 #include <errno.h>
 #include <sys/socket.h>
 
+int sockfd;
+
 void perr_exit(const char *s)
 {
 	perror(s);

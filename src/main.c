@@ -26,13 +26,14 @@
 #define MAXLINE 512
 #define SERV_PORT 53
 
+extern int sockfd;
 extern int debug_info;
 extern char serverName[16];
 extern char configFile[64];
 extern Request requests[REQ_SZLIMIT];
 
-int sockfd, csockfd;
-struct sockaddr_in servaddr, cldaddr, cliaddr;
+struct sockaddr_in servaddr, cliaddr;
+socklen_t cliaddr_len;
 
 int DNS_process(char *buf, ssize_t len);
 void DNS_process_test(char *buf, int len);
@@ -43,7 +44,6 @@ int main(int argc, char *argv[]) {
   debug_info = 3;
 //   freopen("log", "w", stdout);
 #endif
-  socklen_t cliaddr_len;
   char buf[MAXLINE];
   char str[INET_ADDRSTRLEN];
   int i, n;
@@ -65,19 +65,22 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  sockfd = Socket(AF_INET, SOCK_DGRAM, 0);
+  sockfd = Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
   bzero(&servaddr, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servaddr.sin_addr.s_addr = inet_addr(serverName);
   servaddr.sin_port = htons(SERV_PORT);
 
-  csockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-  bzero(&cldaddr, sizeof(cldaddr));
-  cldaddr.sin_family = AF_INET;
-  cldaddr.sin_addr.s_addr = inet_addr(serverName);
-  cldaddr.sin_port = htons(SERV_PORT);
+  memset(&cliaddr, 0, sizeof(struct sockaddr_in));
+  cliaddr.sin_family = AF_INET;
+  cliaddr.sin_addr.s_addr = INADDR_ANY;
+  cliaddr.sin_port = htons(SERV_PORT);
 
-  Bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+  const int REUSE = 1;
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&REUSE, sizeof(REUSE));
+
+  Bind(sockfd, (struct sockaddr *)&cliaddr, sizeof(servaddr));
 
   printf("Accepting connections ...\n");
   while (1) {
@@ -147,86 +150,52 @@ parse:
         // fallthrough
       case 1: // ipv4
         ip = findIP(dns.question->Qname, &found, &dns);
-        if (!found) {
+        if (found) {
+          if (ip == 0)
+            dns.header->rcode = 3;
+          else {
+            dns.header->rcode = 0;
+            dns.header->qr = 1;
+            dns.header->ANcount = htons(1);
+            dns.answer->name = dns.question->Qname;
+            dns.answer->type = htons(1);
+            dns.answer->clas = htons(1);
+            dns.answer->RDlength = htons(4);
+            writeAN(buf + bias, dns);
+            len += sizeof(RRformat) - sizeof(char *) + strlen(dns.question->Qname) + 2;
+          }
+        }
+        else{
           dns.header->ra = 1;
           dns.header->ID = connectCloudDNS(dns);
-          struct sockaddr_in servaddr;
-          int n;
-          char str[INET_ADDRSTRLEN];
-          socklen_t servaddr_len;
-
-          // csockfd = Socket(AF_INET, SOCK_DGRAM, 0);
-          // bzero(&servaddr, sizeof(servaddr));
-          // servaddr.sin_family = AF_INET;
-          // inet_pton(AF_INET, serverName, &servaddr.sin_addr);
-          // servaddr.sin_port = htons(53);
-
-          n = sendto(csockfd, buf, len, 0, (struct sockaddr *)&cldaddr,
-                     sizeof(cldaddr));
+          assert(dns.header->z == 0);
+          ssize_t n = sendto(sockfd, buf, len, 0, (struct sockaddr *)&servaddr,
+                     sizeof(servaddr));
           if (n == -1) {
             perr_exit("sendto error");
             requests[dns.header->ID].used = 0;
           }
-          n = recvfrom(csockfd, buf, 512, 0, NULL, 0);
-          if (n == -1)
-            perr_exit("recvfrom error");
-
-          // log(2, "begin processing server-message of %d B\n", len);
-          // if (dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1 &&
-          //     ntohs(dns.answer->type) == 1) {
-          //   addCache(dns.question->Qname, ntohl(dns.answer->Rdata),
-          //            ntohl(dns.answer->TTL));
-          // }
-          // uint16_t idServer = dns.header->ID;
-          // struct sockaddr_in cliAddr;
-          // cliAddr.sin_family = AF_INET;
-          // uint16_t clientId = requests[idServer].id;
-          // cliAddr.sin_addr.s_addr = htonl(requests[idServer].ip);
-          // cliAddr.sin_port = htonl(requests[idServer].port);
-          // requests[idServer].used = 0;
-          // log(2, "receive the response %d -> %d", idServer, clientId);
-          // ip = findIP(dns.question->Qname, &found, &dns);
-          // assert(found);
-          
-          goto parse;
-        }
-        if (ip == 0)
-          dns.header->rcode = 3;
-        else {
-          dns.header->ra = 1;
-          dns.header->rcode = 0;
-          dns.header->qr = 1;
-          dns.header->ANcount = htons(1);
-          dns.answer->name = dns.question->Qname;
-          dns.answer->type = 1;
-          dns.answer->clas = 1;
-          dns.answer->RDlength = 4;
-          // memcpy(buf + bias, (char *)dns.answer, sizeof(RRformat));//bug
-          writeAN(buf + bias, dns);
-          memset(buf + bias + strlen(dns.question->Qname) + 16, 0,
-                 MAXLINE - (bias + strlen(dns.question->Qname) + 16));
-          len += sizeof(RRformat) - sizeof(char *) +
-                 strlen(dns.question->Qname) + 2;
+          free(dns.question);
+          return 0;
         }
         return len;
         break;
       case 28: // ipv6
-        break;
-      case 5:
-        dns.answer->Rdata = url; // todo: should return 别名
         break;
       default:
         break;
       }
       // TODO: should wrap, not epoll.
     }
-  } else // it receives from server
+  } else if(ntohs(dns.header->ANcount) == 1)// it receives from server
   {
+    dns.answer = (RRformat*)malloc(ntohs(dns.header->ANcount) * sizeof(RRformat)); 
+    bias = readRRs(buf, dns.answer,ntohs(dns.header->ANcount), bias);
     log(2, "begin processing server-message of %d B\n", len);
     if (dns.header->opcode == 0 && ntohs(dns.header->QDcount) == 1 &&
         ntohs(dns.answer->type) == 1) {
-      addCache(dns.question->Qname, ntohl(dns.answer->Rdata),
-               ntohl(dns.answer->TTL));
+      addCache(dns.question->Qname, dns.answer->Rdata,
+               dns.answer->TTL);
     }
     uint16_t idServer = dns.header->ID;
     struct sockaddr_in cliAddr;
@@ -236,10 +205,14 @@ parse:
     cliAddr.sin_port = htonl(requests[idServer].port);
     requests[idServer].used = 0;
     log(2, "receive the response %d -> %d", idServer, clientId);
-    // return 0; // need to send?
+    free(dns.answer->name);
+    free(dns.question);
+    free(dns.answer);
+    return 0; // need to send?
     // not finished yet
   }
-  return len;
+  free(dns.question);
+  return 0;
 }
 
 void DNS_process_test(char *buf, int len) {
