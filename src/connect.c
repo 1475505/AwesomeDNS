@@ -8,10 +8,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-Request requests[REQ_SZLIMIT];
+Request requests[REQ_SZLIMIT]; // store client info for cloud-finding to return
 extern char serverName[16];
 
-uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS code outline. TODO
+uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS.
   struct sockaddr_in clientAddr;
   uint16_t oldID = dns.header->ID;
   log(2, "transfering id %d", oldID);
@@ -33,8 +33,6 @@ uint16_t connectCloudDNS(DNS dns) { // connect to cloud DNS code outline. TODO
   requests[newID].id = oldID;
 
   dns.header->ID = newID;
-
-  
 
   return newID;
 }

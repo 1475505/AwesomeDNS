@@ -24,18 +24,10 @@ uint32_t ip2hex(char *ip) {
   return ans;
 }
 
-// void LOG(int legal, char* info) {
-//     if (legal >= debug_info) {
-//         printf("[LOG %d]", legal);
-//         fputs(info, stdout);
-//     }
-//     return;
-// }
-
 /* trans `name` to dot url in res.
    eg. 60700773xyz0 -> 070077.xyz
    */
-uint32_t getURL(char *name, char *res, size_t * offset) {
+uint32_t getURL(char *name, char *res, size_t *offset) {
   assert(name);
   assert(res);
   log(1, "getting URL :");
@@ -104,20 +96,6 @@ size_t readRRs(char *buf, RRformat *RRs, uint16_t RRcount, size_t bias) {
   return bias;
 }
 
-uint32_t mapIP(char *url) {
-  // TODO: Read file and match URL, return IP.
-  FILE *fd = fopen(configFile, "r");
-  char *line;
-  while (fgets(line, 128, fd)) { // 128 : maxlen of a line
-    char* ip = strtok(NULL, ".");
-    char *urlname = strtok(line, " ");
-    char name[128];size_t * offset;
-    getURL(urlname, name, offset);
-    if (strcmp(url, name))  return ip2hex(ip);//
-  }
-  return 0;
-}
-
 void log(int x, char *fmt, ...) {
   va_list arg_ptr;
   if (debug_info >= x) {
@@ -127,23 +105,18 @@ void log(int x, char *fmt, ...) {
   }
 }
 
-void writeAN(char * start, DNS dns)
-{
+void writeAN(char *start, DNS dns) {
   int i, j = 0, length = 0;
-  for(i = 0; i < strlen(dns.question->Qname);i++)
-  {
-    if(dns.question->Qname[i] == '.')
-    {
+  for (i = 0; i < strlen(dns.question->Qname); i++) {
+    if (dns.question->Qname[i] == '.') {
       start[j] = length;
       length = 0;
       j = i + 1;
-    }
-    else
-    {
+    } else {
       length++;
       start[i + 1] = dns.question->Qname[i];
     }
-  }//convert to standard format
+  } // convert to standard format
   sizeof(RRformat);
   start[j] = length;
   start[strlen(dns.question->Qname) + 1] = '\0';
@@ -152,14 +125,18 @@ void writeAN(char * start, DNS dns)
   start[strlen(dns.question->Qname) + 4] = dns.answer->clas / (1 << 8);
   start[strlen(dns.question->Qname) + 5] = dns.answer->clas % (1 << 8);
   start[strlen(dns.question->Qname) + 6] = dns.answer->TTL / (1 << 24);
-  start[strlen(dns.question->Qname) + 7] = (dns.answer->TTL / (1 << 16)) % (1 << 8);
-  start[strlen(dns.question->Qname) + 8] = (dns.answer->TTL / (1 << 8)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 7] =
+      (dns.answer->TTL / (1 << 16)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 8] =
+      (dns.answer->TTL / (1 << 8)) % (1 << 8);
   start[strlen(dns.question->Qname) + 9] = dns.answer->TTL % (1 << 8);
   start[strlen(dns.question->Qname) + 10] = dns.answer->RDlength / (1 << 8);
   start[strlen(dns.question->Qname) + 11] = dns.answer->RDlength % (1 << 8);
   start[strlen(dns.question->Qname) + 12] = dns.answer->Rdata / (1 << 24);
-  start[strlen(dns.question->Qname) + 13] = (dns.answer->Rdata / (1 << 16)) % (1 << 8);
-  start[strlen(dns.question->Qname) + 14] = (dns.answer->Rdata / (1 << 8)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 13] =
+      (dns.answer->Rdata / (1 << 16)) % (1 << 8);
+  start[strlen(dns.question->Qname) + 14] =
+      (dns.answer->Rdata / (1 << 8)) % (1 << 8);
   start[strlen(dns.question->Qname) + 15] = dns.answer->Rdata % (1 << 8);
   start[strlen(dns.question->Qname) + 16] = '\0';
 }

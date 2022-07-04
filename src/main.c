@@ -6,13 +6,14 @@
 - 表中未检到该域名，则向因特网DNS服务器发出查询，并将结果返给客户端（中继功能）
      考虑多个计算机上的客户端会同时查询，需要进行消息ID的转换
 */
-#include "connect.h"
 // #define DEBUG
 #include "DNS.h"
 #include "Socket.h"
 #include "config.h"
+#include "connect.h"
 #include "utils.h"
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,12 +24,12 @@
 WSADATA wsaData;
 extern SOCKET Sock;
 #elif __linux__
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/ip.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 extern int sockfd;
 
@@ -67,7 +68,6 @@ int main(int argc, char *argv[]) {
     while (fscanf(fp, "%s %s", ipstr, name) != EOF) {
       uint32_t ip = inet_addr(ipstr);
       insertTrie(name, ntohl(ip), 86400);
-      /* code */
       memset(ipstr, 0, 15);
       memset(name, 0, 256);
     }
@@ -76,14 +76,13 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  #ifdef _WIN32
-    int status = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (status != 0)
-    {
-        log(0, "Windows Socket DLL Error\n");
-        exit(-1);
-    }
-  #endif
+#ifdef _WIN32
+  int status = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (status != 0) {
+    log(0, "Windows Socket DLL Error\n");
+    exit(-1);
+  }
+#endif
 
   sockfd = Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -126,7 +125,7 @@ int main(int argc, char *argv[]) {
   }
 
 #ifdef _WIN32
-    WSACleanup();
+  WSACleanup();
 #endif
 
   return 0;
@@ -136,10 +135,6 @@ int DNS_process(char *buf, ssize_t len) {
   // #ifdef DEBUG
   //     assert(sizeof(dnsHeader) == 12);
   // #endif
-  // Qsection q[dnsHeader.QDcount];
-  // RRformat rr_q[dnsHeader.ANcount];
-  // RRformat rr_auth[dnsHeader.NScount];
-  // RRformat rr_add[dnsHeader.ARcount];
   DNS dns;
   size_t bias;
   dns.header = (DNSHeader *)buf;
@@ -149,14 +144,6 @@ int DNS_process(char *buf, ssize_t len) {
   dns.question =
       (Qsection *)malloc(ntohs(dns.header->QDcount) * sizeof(Qsection));
   bias = readQuestions(buf, dns.question, ntohs(dns.header->QDcount));
-  // dns.answer = (RRformat*)malloc(ntohs(dns.header->ANcount) *
-  // sizeof(RRformat)); bias = readRRs(buf, dns.answer,
-  // ntohs(dns.header->ANcount), bias); dns.authority =
-  // (RRformat*)malloc(ntohs(dns.header->NScount) * sizeof(RRformat)); bias =
-  // readRRs(buf, dns.authority, ntohs(dns.header->NScount), bias);
-  // dns.additional = (RRformat*)malloc(ntohs(dns.header->ARcount) *
-  // sizeof(RRformat)); bias = readRRs(buf, dns.additional,
-  // ntohs(dns.header->ARcount), bias);
 #ifdef DEBUG
   assert(sizeof(dns) >= 12);
 #endif
@@ -208,7 +195,7 @@ int DNS_process(char *buf, ssize_t len) {
         }
         return len;
         break;
-      case 28: // ipv6
+      case 28: // ipv6, todo
         break;
       default:
         break;
@@ -237,8 +224,7 @@ int DNS_process(char *buf, ssize_t len) {
     free(dns.question->Qname);
     free(dns.question);
     free(dns.answer);
-    return 0; // need to send?
-    // not finished yet
+    return len; // need to send back
   } else
     return 0;
   // free(dns.answer);
@@ -247,7 +233,7 @@ int DNS_process(char *buf, ssize_t len) {
   return 0;
 }
 
-void DNS_process_test(char *buf, int len) {
+void DNS_process_test(char *buf, int len) { // just for developers' testing
   for (int i = 0; i < len; i++)
     buf[i] = toupper(buf[i]);
 }
