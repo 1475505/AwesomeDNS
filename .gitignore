@@ -1,8 +1,8 @@
 *.pdf
 *.pptx
-.vscode/*
 .vscode
 *.log
+gdb
 
 # Prerequisites
 *.d
@@ -36,3 +36,5 @@
 *.exe
 *.out
 *.app
+src/dnsrelay.txt
+output/main

@@ -1,10 +1,9 @@
 #ifndef SOCKET_H__
 #define SOCKET_H__
 
-#include <stdlib.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <sys/socket.h>
-
 
 void perr_exit(const char *s);
 int Accept(int fd, struct sockaddr *sa, socklen_t *salenptr);
